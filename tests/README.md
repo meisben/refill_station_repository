@@ -26,13 +26,13 @@ This folder contains the testing information for the refill station
 ## Test method
 Follow the instructions in the table below
 
-| Test ID        | What is tested?       |Associated test code           | Comment  |
-| :-----------:|-------------|:-------------:| ----|
-| Test A1 | Arduino board   | Example blink code (from arduino IDE) | Generally tested after wiring to arduino |
-| Test B1 | Hook up wire on pin 12   | pin_test_led_v2.ino  |   Pin #12 hookup wires are connected to LED tester |
-| Test C1 | Arduino power source hookup wires | pin_test_led_v2.ino   | Pin #12 hookup wires are connected to LED tester |
-| Test D1 | HX711 | hx711_strain_gauge_v1.1.ino  | hx711 and strain gauage should be connected and wired into frame |
-| Test E1 | LED shield | TBC  | Pin #12 hookup wires are connected to LED tester |
+| Test ID        | What is tested?       |Associated test code           | Stage  | Condition
+| :-----------:|-------------|:-------------:| ----| ----|
+| Test A1 | Arduino board   | Example blink code (from arduino IDE) | After wiring to arduino | N/A
+| Test B1 | Hook up wire on pin 12   | pin_test_led_v2.ino  | After wiring to arduino   | Pin #12 hookup wires are connected to LED tester |
+| Test C1 | Arduino power source hookup wires | pin_test_led_v2.ino | After wiring to arduino | Pin #12 hookup wires are connected to LED tester |
+| Test D1 | HX711 | hx711_strain_gauge_v1.1.ino | After asembling hx711 and strain gauge | hx711 and strain gauage should be connected and wired into frame |
+| Test E1 | LED shield | TBC | After testing steps above | Pin #12 hookup wires are connected to LED tester |
 
 
 ## Prerequisites
