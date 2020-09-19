@@ -12,9 +12,11 @@ The repository has the following structure
 
 | Folder name        | Contents           | Comment  |
 | :-----------: |:-------------:| :----:|
-| tests      | Testing instructions | N/A |
 | assembly     | Assembly instructions      |   N/A |
 | images | Images for Readme      |    N/A |
+| production_code | Code used for the refill stations in a 'production' environment   |    N/A |
+| record | Record of attributes for each completed refill station      |    N/A |
+| tests      | Testing instructions | N/A |
 
 ## Prerequisites
 The following arduino libraries are required to be installed on your system for the full code to work
