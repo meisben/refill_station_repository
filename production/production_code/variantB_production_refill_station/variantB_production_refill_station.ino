@@ -27,6 +27,7 @@
    v2.00 - [Checkpoint, production] 
    v2.10 - Adjusting masses in garden with water to get correct weights
    v2.11 - Adjusting code to variant B -> to accomodate TAL220 strain gauge and D1Robot keypad
+   v2.12 - Squishing bug where eroneous button presses after pumping were carried forward to the next bottle (added line "buttonPressActive = false; // reset status to ignore any erroneous button presses and wait for next button press" to case 0 of the state machine)
 
 */
 
@@ -141,7 +142,7 @@ char lastButtonPressed = 'Z'; // initialised to an unused char
 bool buttonPressActive = false;
 
 // For debugging
-bool debug_verbose = true; //if set to true, extra text is printed out
+bool debug_verbose = false; //if set to true, extra text is printed out
 bool debug_scaleValue = false; //if set to true, the scale reading is printed out 500ms
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -340,6 +341,7 @@ bool stateMachine() {
       // -->> continue to check if container is placed on scale then move to next program state
       if (isContainerPresent()) {
         currentProgramState = 1;
+        buttonPressActive = false; // reset status to ignore any erroneous button presses and wait for next button press
         Serial.println(F("Press button to select fluid quantity. 'Left':0.25L, 'Up':0.5L, 'Down':1L"));
         lcdPrint("Press L:0.25,", "U:0.5, D:1 litre", false);
       }
