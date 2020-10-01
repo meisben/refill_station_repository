@@ -144,6 +144,7 @@ void actionButtonState(MD_UISwitch::keyResult_t state)
     case MD_UISwitch::KEY_UP:                                      break;
     case MD_UISwitch::KEY_DOWN:                                    break;
     case MD_UISwitch::KEY_PRESS:
+      {
       char key = (char)S.getKey();
       switch (key) {
        
@@ -162,7 +163,7 @@ void actionButtonState(MD_UISwitch::keyResult_t state)
         case 'D': //down button
           showCalibratedResult();
           break;
-
+      }
       }
 
 

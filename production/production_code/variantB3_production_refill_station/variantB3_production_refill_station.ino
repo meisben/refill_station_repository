@@ -111,7 +111,8 @@ int currentProgramState = 0;
 bool firstTimeInState = false;
 
 // For calibration
-float scalingFactor = 191.45;
+//float scalingFactor = 191.45;
+float scalingFactor = 214;
 
 // For pumping trigger
 const int outputPinPump1 =  12; // The output pin assigned to this pump, note this is normally pin '12', but 'LED_BUILTIN' can be usefully used for debugging! Note that it can't share the same pins as the LCD shield ! 
@@ -121,9 +122,9 @@ bool outputPinPump_emergencyStop = false; // Used to cancel pumping
 
 // For storing the masses of interest (from the 'hx711_calibration_spreadsheet.xls')
 int testMass = 330; // A good test object is 150g chocolate bars, yum ;) 
-int quarterLitreMass = 180; //This is adjusted to account for shampoo density, values are from the calibration sheet. // was 215
-int halfLitreMass = 400; //was 440
-int litreMass = 840; //was 890
+int quarterLitreMass = 190; //This is adjusted to account for shampoo density, values are from the calibration sheet. // was 215 for water //was 180 for soap (non FILL)
+int halfLitreMass = 420; //was 440 for water // was 400 for soap (non FILL)
+int litreMass = 870; //was 890 for water //was 840 for soap (non FILL)
 
 // For storing the container/bottle mass, and the mass to pump
 int containerMass; //used to record the current mass of the container used for receiving liquid
@@ -142,7 +143,7 @@ char lastButtonPressed = 'Z'; // initialised to an unused char
 bool buttonPressActive = false;
 
 // For debugging
-bool debug_verbose = true; //if set to true, extra text is printed out
+bool debug_verbose = false; //if set to true, extra text is printed out
 bool debug_scaleValue = false; //if set to true, the scale reading is printed out 500ms
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
