@@ -22,16 +22,16 @@ Follow the instructions in the table below
 ### Production code base versions
 These are the base 'reference' versions of the code. Updates happen here, are tested on this code, and are manually proliferated to the child versions of the code. Clearly this isn't efficient if the use of this software grows, but it works for prototyping..!
 
-| Refill Station Type | Production code assignment         | Latest Version | Tested? |                                                               Bug list                                                               |
-| :-----------------: | ---------------------------------- | :------------: | :-----: | :----------------------------------------------------------------------------------------------------------------------------------: |
-|         Mk1         | variantB_production_refill_station |     v2.12      |   Yes   | (1) When buttons are pressed after 'finish pumping' then pumping will immediately start when new bottle is placed (Under resolution) |
+| Refill Station Type | Production code assignment         | Latest Version | Tested? |  Bug list  |
+| :-----------------: | ---------------------------------- | :------------: | :-----: | :--------: |
+|         Mk1         | variantB_production_refill_station |     v2.12      |   Yes   | None known |
 
 ## Production code child versions
 
-| Refill Station UID | Production code assignment          | Latest Version | Tested? |      Differences from base version      |
-| :----------------: | ----------------------------------- | :------------: | :-----: | :-------------------------------------: |
-|       Mk1_2        | variantB2_production_refill_station |     v2.11      |   Yes   |              No difference              |
-|       Mk1_3        | variantB3_production_refill_station |     v2.11      |   Yes   | Scale factor for hx711 and strain gauge |
+| Refill Station UID | Production code assignment          | Latest Version | Tested? |       Differences from base version       |
+| :----------------: | ----------------------------------- | :------------: | :-----: | :---------------------------------------: |
+|       Mk1_2        | variantB2_production_refill_station |     v2.12      |   Yes   |               No difference               |
+|       Mk1_3        | variantB3_production_refill_station |     v2.12      |   Yes   | Scale factor (for hx711 and strain gauge) |
 
 
 ## Prerequisites

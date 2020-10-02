@@ -1,14 +1,14 @@
 /*
    ~~~~~Prerequisites~~~~~
 
-   TBC
+   See Github Readme
 
    ~~~~~Details~~~~~~~~~~~~
 
    Authors: Ben Money-Coomes
-   Date: 7/7/20
-   Purpose: Strain gauge functionality for displaying values from the refill strain gauge
-   References: See OneNote
+   Date: 2/10/20
+   Purpose: Production code baseline for prototype refill station (version B2). For usage see Github readme
+   References: See Github Readme
 
    ~~~~Version Control~~~~~
 
@@ -27,6 +27,8 @@
    v2.00 - [Checkpoint, production] 
    v2.10 - Adjusting masses in garden with water to get correct weights
    v2.11 - Adjusting code to variant B -> to accomodate TAL220 strain gauge and D1Robot keypad
+   v2.11a - Ajusting to variant B2 (no changes)
+   v2.12 - Squishing bug where eroneous button presses after pumping were carried forward to the next bottle (added line "buttonPressActive = false; // reset status to ignore any erroneous button presses and wait for next button press" to case 0 of the state machine)
 
 */
 
@@ -340,6 +342,7 @@ bool stateMachine() {
       // -->> continue to check if container is placed on scale then move to next program state
       if (isContainerPresent()) {
         currentProgramState = 1;
+        buttonPressActive = false; // reset status to ignore any erroneous button presses and wait for next button press (v2.12 edit)
         Serial.println(F("Press button to select fluid quantity. 'Left':0.25L, 'Up':0.5L, 'Down':1L"));
         lcdPrint("Press L:0.25,", "U:0.5, D:1 litre", false);
       }

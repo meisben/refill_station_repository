@@ -1,14 +1,14 @@
 /*
    ~~~~~Prerequisites~~~~~
 
-   TBC
+   See Github readme
 
    ~~~~~Details~~~~~~~~~~~~
 
    Authors: Ben Money-Coomes
-   Date: 7/7/20
-   Purpose: Strain gauge functionality for displaying values from the refill strain gauge
-   References: See OneNote
+   Date: 2/10/20
+   Purpose: Production code baseline for prototype refill station
+   References: See Github Readme
 
    ~~~~Version Control~~~~~
 
@@ -341,7 +341,7 @@ bool stateMachine() {
       // -->> continue to check if container is placed on scale then move to next program state
       if (isContainerPresent()) {
         currentProgramState = 1;
-        buttonPressActive = false; // reset status to ignore any erroneous button presses and wait for next button press
+        buttonPressActive = false; // reset status to ignore any erroneous button presses and wait for next button press (v2.12 edit)
         Serial.println(F("Press button to select fluid quantity. 'Left':0.25L, 'Up':0.5L, 'Down':1L"));
         lcdPrint("Press L:0.25,", "U:0.5, D:1 litre", false);
       }
