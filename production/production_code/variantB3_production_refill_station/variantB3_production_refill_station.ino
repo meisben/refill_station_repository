@@ -123,9 +123,9 @@ bool outputPinPump_emergencyStop = false; // Used to cancel pumping
 
 // For storing the masses of interest (from the 'hx711_calibration_spreadsheet.xls')
 int testMass = 330; // A good test object is 150g chocolate bars, yum ;) 
-int quarterLitreMass = 190; //This is adjusted to account for shampoo density, values are from the calibration sheet. // was 215 for water //was 180 for soap (non FILL)
-int halfLitreMass = 420; //was 440 for water // was 400 for soap (non FILL)
-int litreMass = 870; //was 890 for water //was 840 for soap (non FILL)
+int quarterLitreMass = 180; //This is adjusted to account for shampoo density, values are from the calibration sheet. // was 215 for water //was 180 for soap (non FILL)
+int halfLitreMass = 380; //was 440 for water // was 400 for soap (non FILL)
+int litreMass = 840; //was 890 for water //was 840 for soap (non FILL)
 
 // For storing the container/bottle mass, and the mass to pump
 int containerMass; //used to record the current mass of the container used for receiving liquid
@@ -135,7 +135,7 @@ int massToPump = 0; //used to store the current mass to pump
 bool cancelSignal = false;
 
 // The expected mass of the lightest receptacle and the boolean which keeps track of whether a container is present on the scale
-int expectedContainerMass = 20;
+int expectedContainerMass = 75;
 bool containerPresent = false;
 
 // To hold the current LCD shield pushbutton state

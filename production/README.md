@@ -28,10 +28,10 @@ These are the base 'reference' versions of the code. Updates happen here, are te
 
 ## Production code child versions
 
-| Refill Station UID | Production code assignment          | Latest Version | Tested? |       Differences from base version       |
-| :----------------: | ----------------------------------- | :------------: | :-----: | :---------------------------------------: |
-|       Mk1_2        | variantB2_production_refill_station |     v2.12      |   Yes   |               No difference               |
-|       Mk1_3        | variantB3_production_refill_station |     v2.12      |   Yes   | Scale factor (for hx711 and strain gauge) |
+| Refill Station UID | Production code assignment          | Latest Version | Tested? |                                           Differences from base version                                           |
+| :----------------: | ----------------------------------- | :------------: | :-----: | :---------------------------------------------------------------------------------------------------------------: |
+|       Mk1_2        | variantB2_production_refill_station |     v2.12      |   Yes   |                                                   No difference                                                   |
+|       Mk1_3        | variantB3_production_refill_station |     v2.12      |   Yes   | [A] Scale factor (for hx711 and strain gauge) [B] "int expectedContainerMass = 50;" (solves creep/drift of scale) |
 
 
 ## Prerequisites
