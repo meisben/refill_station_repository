@@ -28,10 +28,11 @@ These are the base 'reference' versions of the code. Updates happen here, are te
 
 ## Production code child versions
 
-| Refill Station UID | Production code assignment          | Latest Version | Tested? |                                           Differences from base version                                           |
-| :----------------: | ----------------------------------- | :------------: | :-----: | :---------------------------------------------------------------------------------------------------------------: |
-|       Mk1_2        | variantB2_production_refill_station |     v2.12      |   Yes   |                                                   No difference                                                   |
-|       Mk1_3        | variantB3_production_refill_station |     v2.12      |   Yes   | [A] Scale factor (for hx711 and strain gauge) [B] "int expectedContainerMass = 50;" (solves creep/drift of scale) |
+| Refill Station UID | Production code assignment          | Latest Version | Tested? | Scale factor used |                                                                  Differences from base version                                                                  |
+| :----------------: | ----------------------------------- | :------------: | :-----: | :---------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+|       Mk1_1        | variantB2_production_refill_station |     v2.12      |   No    |      112.157      | [A] Scale factor (for hx711 and strain gauge) [B] "int expectedContainerMass = 50;" (solves creep/drift of scale)  [C] alternate button resitance ladder values |
+|       Mk1_2        | variantB2_production_refill_station |     v2.12      |   Yes   |      223.61       |                                                                          No difference                                                                          |
+|       Mk1_3        | variantB3_production_refill_station |     v2.12      |   Yes   |        214        |                        [A] Scale factor (for hx711 and strain gauge) [B] "int expectedContainerMass = 50;" (solves creep/drift of scale)                        |
 
 
 ## Prerequisites
