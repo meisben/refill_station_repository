@@ -52,8 +52,8 @@ auto timer = timer_create_default(); // create a timer with default settings
 
 const uint8_t ANALOG_SWITCH_PIN = A0;       // switches connected to this pin
 
- These key values work for most LCD shields
- Can be found using button_test_v1.0.ino script in drafts folder
+// These key values work for most LCD shields
+// Can be found using button_test_v1.0.ino script in drafts folder
 MD_UISwitch_Analog::uiAnalogKeys_t kt[] =
 {
   { 0, 0, 'R' },  // Right
@@ -143,8 +143,8 @@ char lastButtonPressed = 'Z'; // initialised to an unused char
 bool buttonPressActive = false;
 
 // For debugging
-bool debug_verbose = true; //if set to true, extra text is printed out
-bool debug_scaleValue = false; //if set to true, the scale reading is printed out 500ms
+bool debug_verbose = false; //if set to true, extra text is printed out
+bool debug_scaleValue = true; //if set to true, the scale reading is printed out 500ms
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
   Start of main program                                                          *
@@ -175,8 +175,8 @@ void setup()
   pushbuttonSwitch.enableLongPress(false);
 
   //Setup the timer -----
-  timer.every(800, stateMachine); //manage the state of the program,to be called every 500 millis (0.5 second)
-  timer.every(800, managePumptriggers); //manage the pump on/off statuses, to be called every 500 millis (0.5 second)
+  timer.every(800, stateMachine); //manage the state of the program,to be called every 500 millis (0.8 second)
+  timer.every(800, managePumptriggers); //manage the pump on/off statuses, to be called every 500 millis (0.1 second)
   if (debug_scaleValue) {
     timer.every(500, printScaleValueToSerial);
   }

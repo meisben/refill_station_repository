@@ -144,7 +144,7 @@ bool buttonPressActive = false;
 
 // For debugging
 bool debug_verbose = true; //if set to true, extra text is printed out
-bool debug_scaleValue = false; //if set to true, the scale reading is printed out 500ms
+bool debug_scaleValue = true; //if set to true, the scale reading is printed out 500ms
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
   Start of main program                                                          *

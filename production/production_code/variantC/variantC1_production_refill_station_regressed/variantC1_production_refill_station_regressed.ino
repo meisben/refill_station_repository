@@ -54,24 +54,24 @@ const uint8_t ANALOG_SWITCH_PIN = A0;       // switches connected to this pin
 
 // These key values work for most LCD shields
 // Can be found using button_test_v1.0.ino script in drafts folder
-//MD_UISwitch_Analog::uiAnalogKeys_t kt[] =
-//{
-//  { 0, 0, 'R' },  // Right
-//  { 100, 15, 'U' },  // Up
-//  { 257, 15, 'D' },  // Down
-//  { 410, 15, 'L' },  // Left
-//  { 640, 15, 'S' },  // Select
-//};
-
-// These key values work for the "D1 Robot" LCD shields
 MD_UISwitch_Analog::uiAnalogKeys_t kt[] =
 {
   { 0, 0, 'R' },  // Right
-  { 131, 15, 'U' },  // Up
-  { 307, 15, 'D' },  // Down
-  { 480, 15, 'L' },  // Left
-  { 720, 15, 'S' },  // Select
+  { 100, 15, 'U' },  // Up
+  { 257, 15, 'D' },  // Down
+  { 410, 15, 'L' },  // Left
+  { 640, 15, 'S' },  // Select
 };
+
+// These key values work for the "D1 Robot" LCD shields
+//MD_UISwitch_Analog::uiAnalogKeys_t kt[] =
+//{
+//  { 0, 0, 'R' },  // Right
+//  { 131, 15, 'U' },  // Up
+//  { 310, 15, 'D' },  // Down
+//  { 480, 15, 'L' },  // Left
+//  { 720, 15, 'S' },  // Select
+//};
 
 
 // Initialise Switch
@@ -112,8 +112,8 @@ int currentProgramState = 0;
 bool firstTimeInState = false;
 
 // For calibration
-//float scalingFactor = 191.45;
-float scalingFactor = 214;
+//float scalingFactor = 1588.48;
+float scalingFactor = 1588.48;
 
 // For pumping trigger
 const int outputPinPump1 =  12; // The output pin assigned to this pump, note this is normally pin '12', but 'LED_BUILTIN' can be usefully used for debugging! Note that it can't share the same pins as the LCD shield ! 
@@ -145,7 +145,7 @@ bool buttonPressActive = false;
 
 // For debugging
 bool debug_verbose = false; //if set to true, extra text is printed out
-bool debug_scaleValue = true; //if set to true, the scale reading is printed out 500ms
+bool debug_scaleValue = false; //if set to true, the scale reading is printed out 500ms
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
   Start of main program                                                          *
@@ -235,7 +235,7 @@ bool readLCDShieldButtons() {
       //    case MD_UISwitch::KEY_RPTPRESS:  Serial.println("KEY_RPTPRESS");  break;
       //    default:                         Serial.println("KEY_UNKNWN");    break;
   }
-
+  
   return true; // important, to ensure timer continues to repeat this function!
 }
 
@@ -318,19 +318,22 @@ bool manageCancelButton() {
 // To manage whether a receptacle is detected on the scale and whether it has been removed. Protect against fluid spills. Allow correct text to be shown to user
 bool isContainerPresent() {
 
-  float currentMass = scale.get_units(3); //the average of 5 readings from the ADC minus tare weight, divided by the SCALE parameter set with set_scale
+  float currentMass = scale.get_units(1); //the average of x readings from the ADC minus tare weight, divided by the SCALE parameter set with set_scale
 
   if (currentMass >= expectedContainerMass) {
+//    Serial.println("Container");
     return true;
   }
   else {
+//    Serial.print("No container, currentMass = ");
+//    Serial.println(currentMass);
     return false;
   }
 }
 
 void printScaleValueToSerial() {
   Serial.print(F("Scale value (g): "));
-  Serial.println(scale.get_units(2)); //prints to serial constantly for debugging purposes, can be graphed!
+  Serial.println(scale.get_units(1)); //prints to serial constantly for debugging purposes, can be graphed!
 }
 
 

@@ -43,7 +43,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
   Definitions                                                                    *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-//Timeer definitions ------------------------
+//Timer definitions ------------------------
 
 auto timer = timer_create_default(); // create a timer with default settings
 

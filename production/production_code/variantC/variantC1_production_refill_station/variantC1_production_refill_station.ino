@@ -1,13 +1,13 @@
 /*
    ~~~~~Prerequisites~~~~~
 
-   See Github readme
+   See Github Readme
 
    ~~~~~Details~~~~~~~~~~~~
 
    Authors: Ben Money-Coomes
    Date: 2/10/20
-   Purpose: Production code baseline for prototype refill station (version B3) -> see Github readme for usage
+   Purpose: Production code baseline for prototype refill station (version B2). For usage see Github readme
    References: See Github Readme
 
    ~~~~Version Control~~~~~
@@ -27,9 +27,10 @@
    v2.00 - [Checkpoint, production] 
    v2.10 - Adjusting masses in garden with water to get correct weights
    v2.11 - Adjusting code to variant B -> to accomodate TAL220 strain gauge and D1Robot keypad
-   v2.11a - Ajusting to variant B3 -> altering strain gauage calibration factor to 191 for gauage with UID:02 
+   v2.11a - Ajusting to variant B2 (no changes)
    v2.12 - Squishing bug where eroneous button presses after pumping were carried forward to the next bottle (added line "buttonPressActive = false; // reset status to ignore any erroneous button presses and wait for next button press" to case 0 of the state machine)
-
+   v2.12_draftv1 - Looking to implement a low pass filter to see if it improves the pumping variation performance
+   v_C_2.3 - [Checkpoint] for variant C, note there's something still wierd going on if you press the 's'button before one of the L,R,U buttons
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -40,6 +41,7 @@
 #include <LiquidCrystal.h> // for LCD screen
 #include <MD_UISwitch.h> // for reistor ladder buttons on LCD shield
 #include <arduino-timer.h> // to create timers // https://github.com/contrem/arduino-timer
+#include "g_h_filter_class.h" // allows filtering of the mass sensor readings
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
   Definitions                                                                    *
@@ -54,24 +56,24 @@ const uint8_t ANALOG_SWITCH_PIN = A0;       // switches connected to this pin
 
 // These key values work for most LCD shields
 // Can be found using button_test_v1.0.ino script in drafts folder
-//MD_UISwitch_Analog::uiAnalogKeys_t kt[] =
-//{
-//  { 0, 0, 'R' },  // Right
-//  { 100, 15, 'U' },  // Up
-//  { 257, 15, 'D' },  // Down
-//  { 410, 15, 'L' },  // Left
-//  { 640, 15, 'S' },  // Select
-//};
-
-// These key values work for the "D1 Robot" LCD shields
 MD_UISwitch_Analog::uiAnalogKeys_t kt[] =
 {
   { 0, 0, 'R' },  // Right
-  { 131, 15, 'U' },  // Up
-  { 307, 15, 'D' },  // Down
-  { 480, 15, 'L' },  // Left
-  { 720, 15, 'S' },  // Select
+  { 100, 15, 'U' },  // Up
+  { 257, 15, 'D' },  // Down
+  { 410, 15, 'L' },  // Left
+  { 640, 15, 'S' },  // Select
 };
+
+//// These key values work for the "D1 Robot" LCD shields (at least one of them!)
+//MD_UISwitch_Analog::uiAnalogKeys_t kt[] =
+//{
+//  { 0, 0, 'R' },  // Right
+//  { 131, 15, 'U' },  // Up
+//  { 307, 15, 'D' },  // Down
+//  { 480, 15, 'L' },  // Left
+//  { 720, 15, 'S' },  // Select
+//};
 
 
 // Initialise Switch
@@ -103,6 +105,11 @@ const int LOADCELL_SCK_PIN = 3;
 
 // Note that when using the LCD Keypad Shield then pin 2 is the 3rd pin from the rhs and pin 3 is the 4th pin from the rhs
 
+// G-H filter constants -----------------------------
+
+#define G_CONSTANT 0.3
+#define H_CONSTANT 0.2
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
   Global Variables                                                        *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -112,8 +119,7 @@ int currentProgramState = 0;
 bool firstTimeInState = false;
 
 // For calibration
-//float scalingFactor = 191.45;
-float scalingFactor = 214;
+float scalingFactor = 1588.48;
 
 // For pumping trigger
 const int outputPinPump1 =  12; // The output pin assigned to this pump, note this is normally pin '12', but 'LED_BUILTIN' can be usefully used for debugging! Note that it can't share the same pins as the LCD shield ! 
@@ -123,9 +129,9 @@ bool outputPinPump_emergencyStop = false; // Used to cancel pumping
 
 // For storing the masses of interest (from the 'hx711_calibration_spreadsheet.xls')
 int testMass = 330; // A good test object is 150g chocolate bars, yum ;) 
-int quarterLitreMass = 180; //This is adjusted to account for shampoo density, values are from the calibration sheet. // was 215 for water //was 180 for soap (non FILL)
-int halfLitreMass = 380; //was 440 for water // was 400 for soap (non FILL)
-int litreMass = 840; //was 890 for water //was 840 for soap (non FILL)
+int quarterLitreMass = 180; //This is adjusted to account for shampoo density, values are from the calibration sheet. // was 215
+int halfLitreMass = 400; //was 440
+int litreMass = 840; //was 890
 
 // For storing the container/bottle mass, and the mass to pump
 int containerMass; //used to record the current mass of the container used for receiving liquid
@@ -135,7 +141,7 @@ int massToPump = 0; //used to store the current mass to pump
 bool cancelSignal = false;
 
 // The expected mass of the lightest receptacle and the boolean which keeps track of whether a container is present on the scale
-int expectedContainerMass = 75;
+int expectedContainerMass = 50;
 bool containerPresent = false;
 
 // To hold the current LCD shield pushbutton state
@@ -143,9 +149,12 @@ MD_UISwitch::keyResult_t buttonState;
 char lastButtonPressed = 'Z'; // initialised to an unused char
 bool buttonPressActive = false;
 
+// Initialise g-h filter
+g_h_filter massFilter(200, 0, 300, G_CONSTANT, H_CONSTANT); //create g-h filter for tracking system state (mass of fluid) g = 0.2 and h = 0.2
+
 // For debugging
 bool debug_verbose = false; //if set to true, extra text is printed out
-bool debug_scaleValue = true; //if set to true, the scale reading is printed out 500ms
+bool debug_scaleValue = false; //if set to true, the scale reading is printed out 500ms
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
   Start of main program                                                          *
@@ -176,8 +185,8 @@ void setup()
   pushbuttonSwitch.enableLongPress(false);
 
   //Setup the timer -----
-  timer.every(800, stateMachine); //manage the state of the program,to be called every 500 millis (0.5 second)
-  timer.every(800, managePumptriggers); //manage the pump on/off statuses, to be called every 500 millis (0.5 second)
+  timer.every(800, stateMachine); //manage the state of the program,to be called every 500 millis (0.8 second)
+  timer.every(300, managePumptriggers); //manage the pump on/off statuses, to be called every 500 millis (0.1 second)
   if (debug_scaleValue) {
     timer.every(500, printScaleValueToSerial);
   }
@@ -235,7 +244,7 @@ bool readLCDShieldButtons() {
       //    case MD_UISwitch::KEY_RPTPRESS:  Serial.println("KEY_RPTPRESS");  break;
       //    default:                         Serial.println("KEY_UNKNWN");    break;
   }
-
+  
   return true; // important, to ensure timer continues to repeat this function!
 }
 
@@ -273,10 +282,17 @@ bool managePumptriggers() {
       digitalWrite(outputPinPump1, HIGH);
       outputPinPump1_triggerActive = true; // turn the output on
       Serial.println(F("Pumping started"));
+      massFilter.reset(scale.get_units(1), 0, 300, G_CONSTANT, H_CONSTANT);
     }
     else {
       bool stopSignal = false;
-      bool stopSignalMassExceeded = isMassExceeded(scale.get_units(1), massToPump); // returns true if pumping volume is exceeded
+      float myCurrentMass = massFilter.return_value(scale.get_units(1));
+//      float myCurrentMass = scale.get_units(1); // uncomment this line if not using g-h filter, then comment previous line
+      if (debug_verbose) {
+        Serial.print("(filter output if using) myCurrentMass = ");
+        Serial.println(myCurrentMass);  
+      }
+      bool stopSignalMassExceeded = isMassExceeded(myCurrentMass, massToPump); // returns true if pumping volume is exceeded
       bool stopSignalCancelButton = manageCancelButton(); //returns true if cancel button is pressed
       stopSignal = (stopSignalMassExceeded || stopSignalCancelButton); // stopSignal takes an logical 'OR' value
 
@@ -318,7 +334,7 @@ bool manageCancelButton() {
 // To manage whether a receptacle is detected on the scale and whether it has been removed. Protect against fluid spills. Allow correct text to be shown to user
 bool isContainerPresent() {
 
-  float currentMass = scale.get_units(3); //the average of 5 readings from the ADC minus tare weight, divided by the SCALE parameter set with set_scale
+  float currentMass = scale.get_units(1); //the average of x readings from the ADC minus tare weight, divided by the SCALE parameter set with set_scale
 
   if (currentMass >= expectedContainerMass) {
     return true;
@@ -330,7 +346,7 @@ bool isContainerPresent() {
 
 void printScaleValueToSerial() {
   Serial.print(F("Scale value (g): "));
-  Serial.println(scale.get_units(2)); //prints to serial constantly for debugging purposes, can be graphed!
+  Serial.println(scale.get_units(1)); //prints to serial constantly for debugging purposes, can be graphed!
 }
 
 
