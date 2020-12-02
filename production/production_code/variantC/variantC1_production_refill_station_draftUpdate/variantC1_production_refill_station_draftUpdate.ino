@@ -30,7 +30,9 @@
    v2.11a - Ajusting to variant B2 (no changes)
    v2.12 - Squishing bug where eroneous button presses after pumping were carried forward to the next bottle (added line "buttonPressActive = false; // reset status to ignore any erroneous button presses and wait for next button press" to case 0 of the state machine)
    v2.12_draftv1 - Looking to implement a low pass filter to see if it improves the pumping variation performance
-   v_C_2.3 - [Checkpoint] for variant C, note there's something still wierd going on if you press the 's'button before one of the L,R,U buttons
+   v_C_2.3 - [Checkpoint] note: the up button is still problematic
+   v_C_2.4 - working on changing button flow
+   v_C_2.5 - [Checkpoint] everything is working
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -59,7 +61,7 @@ const uint8_t ANALOG_SWITCH_PIN = A0;       // switches connected to this pin
 MD_UISwitch_Analog::uiAnalogKeys_t kt[] =
 {
   { 0, 0, 'R' },  // Right
-  { 100, 15, 'U' },  // Up
+  { 100, 50, 'U' },  // Up
   { 257, 15, 'D' },  // Down
   { 410, 15, 'L' },  // Left
   { 640, 15, 'S' },  // Select
@@ -97,7 +99,7 @@ static LiquidCrystal lcd(LCD_RS, LCD_ENA, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
 // HX711 strain gauge -----------------------------
 // HX711  definitions
 HX711 scale;
-long int values = 0;
+//long int values = 0;
 
 // HX711 circuit wiring
 const int LOADCELL_DOUT_PIN = 2;
@@ -107,9 +109,51 @@ const int LOADCELL_SCK_PIN = 3;
 
 // G-H filter constants -----------------------------
 
-#define GH_FILTER_ACTIVE true;
-#define G_CONSTANT 0.3;
-#define H_CONSTANT 0.2;
+//#define GH_FILTER_ACTIVE 1
+#define G_CONSTANT 0.3
+#define H_CONSTANT 0.2
+
+// LCD characters ----------------------------------
+
+const byte up_arrow[8] = {
+  B00000,
+  B00100,
+  B01110,
+  B10101,
+  B00100,
+  B00100,
+  B00100,
+};
+
+const byte down_arrow[8] = {
+  B00000,
+  B00100,
+  B00100,
+  B00100,
+  B10101,
+  B01110,
+  B00100,
+};
+
+const byte right_arrow[8] = {
+  B00000,
+  B00100,
+  B00010,
+  B11111,
+  B00010,
+  B00100,
+  B00000,
+};
+
+const byte left_arrow[8] = {
+  B00000,
+  B00100,
+  B01000,
+  B11111,
+  B01000,
+  B00100,
+  B00000,
+};
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
   Global Variables                                                        *
@@ -129,9 +173,25 @@ bool outputPinPump1_triggerActive = false;  // Used to confirm record that it ha
 bool outputPinPump_emergencyStop = false; // Used to cancel pumping
 
 // For storing the masses of interest (from the 'hx711_calibration_spreadsheet.xls')
-int quarterLitreMass = 180; //This is adjusted to account for shampoo density, values are from the calibration sheet. // was 215
-int halfLitreMass = 400; //was 440
-int litreMass = 840; //was 890
+//int quarterLitreMass = 180; //This is adjusted to account for shampoo density, values are from the calibration sheet. // was 215
+//int halfLitreMass = 400; //was 440
+//int litreMass = 840; //was 890
+byte massSelectionIndex = 1; // Used to index the massSelection arrays, this defines the default (corresponds to 0.5L)
+//int selectedMass = 0; //This is used to store the selected mass to pump using the button menu
+
+int massValues[] = {180, 400, 840};
+
+// For storing the text relating to the masses in an array
+char massText1[] = " 250ml ";
+char massText2[] = " 500ml ";
+char massText3[] = "1000ml ";
+
+char * massStrings[] =
+{
+  massText1,
+  massText2,
+  massText3
+};
 
 // For storing the container/bottle mass, and the mass to pump
 int containerMass; //used to record the current mass of the container used for receiving liquid
@@ -153,8 +213,8 @@ bool buttonPressActive = false;
 g_h_filter massFilter(200, 0, 300, G_CONSTANT, H_CONSTANT); //create g-h filter for tracking system state (mass of fluid) g = 0.2 and h = 0.2
 
 // For debugging
-bool debug_verbose = false; //if set to true, extra text is printed out
-bool debug_scaleValue = false; //if set to true, the scale reading is printed out 500ms
+const bool debug_verbose = false; //if set to true, extra text is printed out
+const bool debug_scaleValue = false; //if set to true, the scale reading is printed out 500ms
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
   Start of main program                                                          *
@@ -173,6 +233,12 @@ void setup()
   // Set up the LCD ------
   // set up the LCD's number of columns and rows:
   lcd.begin(16, 2);
+  // Create custom characters
+  lcd.createChar(0, up_arrow);
+  lcd.createChar(1, down_arrow);
+  lcd.createChar(2, right_arrow);
+  lcd.createChar(3, left_arrow);
+  // inform user we are zeroing the scale
   lcdPrint("<-- Start up -->", "zeroing scale...", false);
 
   // Start communicating with the loadcell -----
@@ -360,14 +426,73 @@ bool stateMachine() {
       if (isContainerPresent()) {
         currentProgramState = 1;
         buttonPressActive = false; // reset status to ignore any erroneous button presses and wait for next button press (v2.12 edit)
-        Serial.println(F("Press button to select fluid quantity. 'Left':0.25L, 'Up':0.5L, 'Down':1L"));
-        lcdPrint("Press L:0.25,", "U:0.5, D:1 litre", false);
+        Serial.println(F("Select volume to pump using up, down buttons. Then press right key"));
+        lcdShowMassSelectionMenu(massSelectionIndex); //show menu screen for selecting the mass (default last selected)
       }
       break;
 
     case 1:
+      // Container is placed, waiting for selection command
+      // -->> continue to check if right (next) button press is issued, then move to next program state
+      // -->> continue to check if container is removed from the scale in error, then go backto previous step
+      // -->> continue to check if up or down buttons are placed, then change the display and the selected mass
+
+      if (buttonPressActive) {
+        buttonPressActive = false; // reset status to wait for next button press
+
+        switch (lastButtonPressed) {
+          case 'S': //select button
+            //Do nothing
+            break;
+          case 'L': //left button
+            //Do nothing
+            break;
+          case 'U': //up button
+            if(massSelectionIndex == 2){
+              massSelectionIndex = 0;
+            }
+            else{
+              massSelectionIndex = massSelectionIndex + 1; //keeps mass index in range of menu size
+            }
+            lcdShowMassSelectionMenu(massSelectionIndex); //show menu screen for selecting the mass
+            break;
+          case 'D': //down button
+            if(massSelectionIndex == 0){
+              massSelectionIndex = ((sizeof(massValues)/2) - 1);
+            }
+            else{
+              massSelectionIndex = massSelectionIndex - 1; //keeps mass index in range of menu size
+            }
+            lcdShowMassSelectionMenu(massSelectionIndex); //show menu screen for selecting the mass
+            break;
+          case 'R': //right button
+            currentProgramState = 2;
+            Serial.println(F("Check nozzle is inserted in receptacle, confirm with right key"));
+            lcd.clear();
+            lcd.setCursor(0,0);
+            lcd.print("Check nozzle is");
+            lcd.setCursor(0,1);
+            lcd.write(byte(3)); 
+            lcd.setCursor(3,1);
+            lcd.print("inserted?");
+            lcd.setCursor(15,1);
+            lcd.write(byte(2)); 
+            break;
+        }
+      }
+
+      if (!isContainerPresent()) {
+        // if container is removed
+        currentProgramState = 0;
+        lcdPrint("Ready...", "place receptacle", false);
+        break;
+      }
+      break;
+
+    case 2:
       // Container is placed, waiting for pumping command
       // -->> continue to check if pumping command button press is issued, then move to next program state
+      // -->> continue to check if back button is pressed, then move to previous program state
       // -->> continue to check if container is removed from the scale in error, then go backto previous step
 
       if (buttonPressActive) {
@@ -377,38 +502,28 @@ bool stateMachine() {
           case 'S': //select button
             break;
           case 'L': //left button
-            cancelSignal = false;
-            pumpFluidVolume(quarterLitreMass);
-            Serial.print(F("pumpFluidVolume activated with mass = "));
-            Serial.print(quarterLitreMass);
-            Serial.println(F(" g"));
+            // move to previous state
+            currentProgramState = 1;
+            lcdShowMassSelectionMenu(massSelectionIndex); //show menu screen for selecting the mass
             break;
           case 'U': //up button
-            cancelSignal = false;
-            pumpFluidVolume(halfLitreMass);
-            Serial.print(F("pumpFluidVolume activated with mass = "));
-            Serial.print(halfLitreMass);
-            Serial.println(F(" g"));
             break;
           case 'D': //down button
-            cancelSignal = false;
-            pumpFluidVolume(litreMass);
-            Serial.print(F("pumpFluidVolume activated with mass = "));
-            Serial.print(litreMass);
-            Serial.println(F(" g"));
             break;
           case 'R': //right button
             cancelSignal = false;
-            pumpFluidVolume(testMass);
-            Serial.print(F("pumpFluidVolume activated with mass = "));
-            Serial.print(testMass);
+            Serial.print(F("pumpFluidVolume activated with volume, mass = "));
+            Serial.print(massStrings[massSelectionIndex]);
+            Serial.print(F(", "));
+            Serial.print(massValues[massSelectionIndex]);
             Serial.println(F(" g"));
+            pumpFluidVolume(massValues[massSelectionIndex]);
             break;
         }
       }
-
+      
       if (outputPinPump1_trigger) {
-        currentProgramState = 2;
+        currentProgramState = 3;
         lcdPrint("Pumping! Press", "'S' to cancel", false);
         break;
       }
@@ -420,7 +535,7 @@ bool stateMachine() {
       }
       break;
 
-    case 2:
+    case 3:
       // Pumping command is activated
       // -->> continue to check if pumping is finished, then move to next program state
       // -->> continue to check if cancel key is pressed, then move to next program state. Note that because cancel key is important this functionality is implemented directly in the button press function!
@@ -428,7 +543,7 @@ bool stateMachine() {
 
       if (!outputPinPump1_trigger) {
         // if pumping ends
-        currentProgramState = 3;
+        currentProgramState = 4;
         firstTimeInState = true;
         break;
       }
@@ -445,7 +560,7 @@ bool stateMachine() {
 
       break;
 
-    case 3:
+    case 4:
       // // Pumping is finished
       // -->> waiting for container to be removed
       if(firstTimeInState){
@@ -488,4 +603,15 @@ void emergencyStop() {
 digitalWrite(outputPinPump1, LOW);   // turn the outputs off
 cancelSignal = true; // act as a cancel button to stop pumping
 Serial.println(F("Emergency Stop!"));
+}
+
+void lcdShowMassSelectionMenu(byte myIndex){
+  // for the indexes 0-> corresponds to 250ml, 1-> corresponds to 500ml, 2-> corresponds to 1L
+  lcdPrint("Select volume", "", false);
+  lcd.setCursor(0,1);
+  lcd.print(massStrings[myIndex]);
+  lcd.write(byte(1));
+  lcd.write(byte(0));
+  lcd.setCursor(15, 1);
+  lcd.write(byte(2)); 
 }
