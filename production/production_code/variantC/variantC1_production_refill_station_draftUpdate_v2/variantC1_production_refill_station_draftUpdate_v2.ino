@@ -51,7 +51,8 @@
   Definitions                                                                    *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 //Start address for EEPROM -----------------
-#define  START_ADDRESS  5 //Starting position in the address space
+#define  SCALING_FACTOR_START_ADDRESS 0
+#define  MASS_SETPOINT_START_ADDRESS  5 //Starting position in the address space
  
 //Timer definitions ------------------------
 
@@ -189,7 +190,7 @@ int currentProgramState = 0;
 bool firstTimeInState = false;
 
 // For calibration
-float scalingFactor = 1588.48;
+float scalingFactor = 1588.48; //note that this is changed by default on startup by reading custom values from the EEPROM (usually set by utility program pre-production) this is a safety value only
 
 // For pumping trigger
 const int outputPinPump1 =  12; // The output pin assigned to this pump, note this is normally pin '12', but 'LED_BUILTIN' can be usefully used for debugging! Note that it can't share the same pins as the LCD shield ! 
@@ -197,13 +198,8 @@ bool outputPinPump1_trigger = false; // Used to call the pump trigger
 bool outputPinPump1_triggerActive = false;  // Used to confirm record that it has been implemented
 bool outputPinPump_emergencyStop = false; // Used to cancel pumping
 
-// For storing the masses of interest (from the 'hx711_calibration_spreadsheet.xls')
-//int quarterLitreMass = 180; //This is adjusted to account for shampoo density, values are from the calibration sheet. // was 215
-//int halfLitreMass = 400; //was 440
-//int litreMass = 840; //was 890
+// For storing the masses of interest
 byte massSelectionIndex = 1; // Used to index the massSelection arrays, this defines the default (corresponds to 0.5L)
-//int selectedMass = 0; //This is used to store the selected mass to pump using the button menu
-
 int massValues[] = {180, 400, 840}; //note these are changed by default on startup by reading custom values from the EEPROM (usually set by utility program pre-production)
 
 // For storing the text relating to the masses in an array
@@ -274,6 +270,11 @@ void setup()
   Serial.println(F("Program commencing..."));
   Serial.println(F("Note: That scale is zeroed during program start up. The scale must have no objects placed on it at startup."));
 
+  // Read scaling factor from the EEPROM
+  EEPROM.get(SCALING_FACTOR_START_ADDRESS, scalingFactor);
+  Serial.print(F("ScalingFactor value (from EEPROM): "));
+  Serial.println(scalingFactor);
+
   // Start communicating with the loadcell -----
   scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
   scale.tare(); // reset the scale to 0, so that the reference mass is set
@@ -285,7 +286,7 @@ void setup()
     Serial.print(F("Reading mass set-point value for: "));
     Serial.println(massStrings[i]);
     
-    EEPROM.get(START_ADDRESS+(2*i), temp_val); // read the value
+    EEPROM.get(MASS_SETPOINT_START_ADDRESS+(2*i), temp_val); // read the value
     massValues[i] = temp_val; // assign it
     Serial.print(F(" Which has value(g) of: ")); // print it to the serial monitor
     Serial.println(massValues[i]);
@@ -855,7 +856,7 @@ bool stateMachine() {
       lcd.setCursor(0,0);
       lcd.write(byte(4)); 
       massValues[massSelectionIndex] = scale.get_units(3); //the average of x readings from the ADC minus tare weight, divided by the SCALE parameter set with set_scale
-      EEPROM.put(START_ADDRESS+(2*massSelectionIndex), massValues[massSelectionIndex]); // Write the value to EEPRM
+      EEPROM.put(MASS_SETPOINT_START_ADDRESS+(2*massSelectionIndex), massValues[massSelectionIndex]); // Write the value to EEPRM
       
       if (debug_verbose) {
         Serial.print(F("Writing value of: "));
