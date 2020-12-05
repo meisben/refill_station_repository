@@ -33,7 +33,8 @@
    v_C_2.3 - [Checkpoint] note: the up button is still problematic
    v_C_2.4 - working on changing button flow
    v_C_2.5 - [Checkpoint] everything is working
-   v_C_2.6 - working on writing Mass Set Points to the EEPROM using new states
+   v_C_2.6 - working on writing Mass Set Points to the EEPROM using new states --> all working in v2
+   v_C_2.6 - working on removing bug caused by ocassional erroneous big negative HX711 readings
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -118,6 +119,12 @@ const int LOADCELL_SCK_PIN = 3;
 #define GH_FILTER_ACTIVE 0 // --> 1 if active, 0 if inactive
 #define G_CONSTANT 0.3
 #define H_CONSTANT 0.2
+
+// Error limit - for scale error catching ----------------------------------
+const bool scaleErrorCatching = true; //if true error catching is active and erroneous readings are ignored
+#define NEGATIVE_ERROR_LIMIT -50 //readings below this value are considered an error, if the refill station sees a value below this in state 1, then it will prompt the user to reset the scale before continuing
+#define NEGATIVE_ERROR_TOLLERANCE_DURING_PUMPING -10 //readings below this error during this pumping are considered an error (in the massExceeded function and ignored) because the mass should be increasing approximately linearly. A seperate function still checks if the container has been removed
+float lastMassValue;
 
 // LCD characters ----------------------------------
 
@@ -222,7 +229,7 @@ int massToPump = 0; //used to store the current mass to pump
 bool cancelSignal = false;
 
 // The expected mass of the lightest receptacle and the boolean which keeps track of whether a container is present on the scale
-int expectedContainerMass = 50;
+int expectedContainerMass = 40;
 bool containerPresent = false;
 
 // To hold the current LCD shield pushbutton state
@@ -231,7 +238,7 @@ char lastButtonPressed = 'Z'; // initialised to an unused char
 bool buttonPressActive = false;
 
 // Initialise g-h filter
-g_h_filter massFilter(200, 0, 300, G_CONSTANT, H_CONSTANT); //create g-h filter for tracking system state (mass of fluid) g = 0.2 and h = 0.2
+g_h_filter massFilter(200, 0, 300, G_CONSTANT, H_CONSTANT); //create g-h filter for tracking system state (mass of fluid)
 
 // For debugging
 const bool debug_verbose = false; //if set to true, extra text is printed out
@@ -306,7 +313,7 @@ void setup()
 
   //Setup the timer -----
   timer.every(800, stateMachine); //manage the state of the program,to be called every 500 millis (0.8 second)
-  timer.every(300, managePumptriggers); //manage the pump on/off statuses, to be called every 500 millis (0.1 second)
+  timer.every(25, managePumptriggers); //manage the pump on/off statuses, to be called every 500 millis (0.1 second)
   if (debug_scaleValue) {
     timer.every(500, printScaleValueToSerial);
   }
@@ -395,6 +402,7 @@ bool managePumptriggers() {
   if (outputPinPump1_trigger == true) {
 
     if (!outputPinPump1_triggerActive) {
+      lastMassValue = scale.get_units(3); //initialise this value
       digitalWrite(outputPinPump1, HIGH);
       outputPinPump1_triggerActive = true; // turn the output on
       Serial.println(F("Pumping started"));
@@ -402,13 +410,15 @@ bool managePumptriggers() {
     }
     else {
       bool stopSignal = false;
-      float myCurrentMass;
-      if(GH_FILTER_ACTIVE==1){
+      float myCurrentMass = scale.get_units(1);
+
+      // the below if statement is active if the G-H filter is active, and the scale is not returning a erroneous negative reading
+      if(GH_FILTER_ACTIVE==1 && !isScaleReadingErroneousDuringPumping(myCurrentMass,lastMassValue)){
         myCurrentMass = massFilter.return_value(scale.get_units(1));        
       }
-      else{
-        myCurrentMass = scale.get_units(1); // uncomment this line if not using g-h filter, then comment previous line
-      }    
+      
+      lastMassValue = myCurrentMass; //store the mass reading for error checking
+      
       if (debug_verbose) {
         Serial.print("filter/scale output myCurrentMass = ");
         Serial.println(myCurrentMass);  
@@ -430,7 +440,7 @@ bool managePumptriggers() {
 }
 
 // To check if the mass being pumped has exceeded the set point
-bool isMassExceeded(float currentMass, float massToExceed) {
+bool isMassExceeded(float currentMass, float massToExceed) {  
   if (currentMass >= massToExceed) {
     Serial.println(F("Mass exceeded set point"));
     return true;
@@ -455,12 +465,45 @@ bool manageCancelButton() {
 // To manage whether a receptacle is detected on the scale and whether it has been removed. Protect against fluid spills. Allow correct text to be shown to user
 bool isContainerPresent() {
 
-  float thisCurrentMass = scale.get_units(2); //the average of x readings from the ADC minus tare weight, divided by the SCALE parameter set with set_scale
-
-  if (thisCurrentMass >= expectedContainerMass) {
-    return true;
+  float thisCurrentMass = scale.get_units(1); //the average of x readings from the ADC minus tare weight, divided by the SCALE parameter set with set_scale
+  
+  if (thisCurrentMass <= expectedContainerMass && !isScaleReadingErroneous(thisCurrentMass)) {
+    if (debug_verbose) {
+      Serial.print(F("  No container present, mass is: "));
+      Serial.println(thisCurrentMass);
+    }
+    return false;
   }
   else {
+    return true;
+  }
+}
+
+bool isScaleReadingErroneous(float myReading){
+  if(scaleErrorCatching){
+    if(myReading < NEGATIVE_ERROR_LIMIT){
+      return true;
+    }
+    else{
+      return false;
+    }
+  }
+  else{
+    return false;
+  }
+}
+
+bool isScaleReadingErroneousDuringPumping(float myReading, float myLastReading){
+  if(scaleErrorCatching){
+
+    if(myReading < myLastReading + NEGATIVE_ERROR_TOLLERANCE_DURING_PUMPING){
+      return true;
+    }
+    else{
+      return false;
+    }    
+  }
+  else{
     return false;
   }
 }

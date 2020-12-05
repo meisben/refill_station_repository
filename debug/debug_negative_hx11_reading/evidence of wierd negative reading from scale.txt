@@ -1,0 +1,242 @@
+Scale value (g): -0.03
+GH filter inactive
+Program commencing...
+Note: That scale is zeroed during program start up. The scale must have no objects placed on it at startup.
+ScalingFactor value (from EEPROM): 1588.48
+Reading mass set-point value for:  250ml 
+ Which has value(g) of: 180
+Reading mass set-point value for:  500ml 
+ Which has value(g) of: 400
+Reading mass set-point value for: 1000ml 
+ Which has value(g) of: 487
+
+Now place fluid receptacle and then press 'right' to start pumping
+
+Scale value (g): 0.12
+Scale value (g): 0.15
+Scale value (g): 0.23
+Scale value (g): -0.06
+Scale value (g): -0.08
+Scale value (g): 0.06
+Scale value (g): 0.40
+Scale value (g): 0.11
+Scale value (g): 0.21
+Scale value (g): 0.02
+Scale value (g): 0.04
+Scale value (g): -0.17
+Select volume to pump using up, down buttons. Then press right key
+Scale value (g): 289.94
+Scale value (g): 283.78
+Scale value (g): 280.70
+Scale value (g): 278.67
+Scale value (g): 278.06
+Check nozzle is inserted in receptacle, confirm with right key
+Scale value (g): 279.02
+Scale value (g): 278.53
+Scale value (g): 277.75
+Scale value (g): 277.32
+Scale value (g): 276.80
+Scale value (g): 276.62
+pumpFluidVolume activated with volume, mass =  500ml , 400 g
+Container mass recorded as =276 g
+Total mass to pump =676 g
+Scale value (g): 276.10
+Pumping started
+filter/scale output myCurrentMass = 282.46
+Scale value (g): 286.33
+filter/scale output myCurrentMass = 303.66
+Scale value (g): 311.01
+filter/scale output myCurrentMass = 314.63
+filter/scale output myCurrentMass = 327.16
+Scale value (g): 336.67
+filter/scale output myCurrentMass = 339.76
+filter/scale output myCurrentMass = 345.69
+Scale value (g): 348.84
+filter/scale output myCurrentMass = 358.18
+Scale value (g): 367.13
+filter/scale output myCurrentMass = 370.31
+filter/scale output myCurrentMass = 379.65
+Scale value (g): 386.07
+filter/scale output myCurrentMass = 395.70
+filter/scale output myCurrentMass = 401.99
+Scale value (g): 405.29
+filter/scale output myCurrentMass = 411.60
+Scale value (g): 421.40
+filter/scale output myCurrentMass = 424.45
+filter/scale output myCurrentMass = 433.95
+Scale value (g): 437.08
+filter/scale output myCurrentMass = 449.61
+filter/scale output myCurrentMass = 455.82
+Scale value (g): 459.09
+filter/scale output myCurrentMass = 465.55
+Scale value (g): -392.81
+filter/scale output myCurrentMass = 478.35
+filter/scale output myCurrentMass = 487.74
+Scale value (g): 491.19
+filter/scale output myCurrentMass = 497.50
+filter/scale output myCurrentMass = 510.29
+Scale value (g): 513.36
+filter/scale output myCurrentMass = 519.95
+Scale value (g): 529.53
+filter/scale output myCurrentMass = 539.19
+filter/scale output myCurrentMass = 545.73
+Scale value (g): 549.03
+filter/scale output myCurrentMass = 555.61
+Scale value (g): 565.44
+filter/scale output myCurrentMass = 568.86
+filter/scale output myCurrentMass = 578.56
+Scale value (g): 584.93
+filter/scale output myCurrentMass = -392.81
+filter/scale output myCurrentMass = 600.76
+Scale value (g): 604.01
+filter/scale output myCurrentMass = 610.28
+Scale value (g): 623.09
+filter/scale output myCurrentMass = 626.31
+filter/scale output myCurrentMass = 632.63
+Scale value (g): 638.91
+filter/scale output myCurrentMass = 642.07
+filter/scale output myCurrentMass = 654.91
+Scale value (g): 658.11
+filter/scale output myCurrentMass = 664.32
+Scale value (g): 673.91
+filter/scale output myCurrentMass = 683.49
+Mass exceeded set point
+Pumping stopped
+Scale value (g): 692.14
+Scale value (g): 690.36
+Scale value (g): 689.85
+Scale value (g): 692.24
+Scale value (g): 691.86
+Scale value (g): 691.38
+Scale value (g): 690.98
+Scale value (g): 690.83
+Scale value (g): 690.71
+Scale value (g): 690.49
+Scale value (g): 690.13
+Scale value (g): 689.99
+Scale value (g): 689.48
+Scale value (g): 690.00
+Scale value (g): 689.79
+Scale value (g): 689.53
+Scale value (g): 689.22
+Scale value (g): 689.27
+Scale value (g): 689.21
+Scale value (g): 689.10
+Scale value (g): 688.99
+Scale value (g): 688.88
+Scale value (g): 688.91
+Scale value (g): 688.62
+Scale value (g): 688.74
+Scale value (g): 688.62
+Scale value (g): 688.50
+Scale value (g): 688.14
+Scale value (g): 688.35
+Scale value (g): 688.34
+Scale value (g): 688.15
+Scale value (g): 688.38
+Scale value (g): 687.91
+Scale value (g): 688.14
+Scale value (g): 687.75
+Scale value (g): 688.16
+Scale value (g): 688.07
+Scale value (g): 687.83
+Scale value (g): 687.73
+Scale value (g): 687.87
+Scale value (g): 687.57
+Scale value (g): 687.76
+Scale value (g): 687.67
+Scale value (g): 687.87
+Scale value (g): 687.53
+Scale value (g): 687.56
+Scale value (g): 687.37
+Scale value (g): 687.11
+Scale value (g): 687.37
+Scale value (g): 687.28
+Scale value (g): 687.10
+Scale value (g): 687.04
+Scale value (g): 687.44
+Scale value (g): 686.77
+Scale value (g): 687.28
+Scale value (g): 687.06
+Scale value (g): 686.94
+Scale value (g): 687.25
+Scale value (g): 687.06
+Scale value (g): 687.08
+Scale value (g): 686.91
+Scale value (g): 686.98
+Scale value (g): 687.05
+Scale value (g): 686.94
+Scale value (g): 686.80
+Scale value (g): 686.65
+Scale value (g): 686.84
+Scale value (g): 686.69
+Scale value (g): 686.76
+Scale value (g): 686.43
+Scale value (g): 686.81
+Scale value (g): 686.69
+Scale value (g): 686.43
+Scale value (g): 686.57
+Scale value (g): 686.39
+Scale value (g): 686.70
+Scale value (g): 686.57
+Scale value (g): 686.53
+Scale value (g): 686.36
+Scale value (g): 686.55
+Scale value (g): 686.31
+Scale value (g): 686.42
+Scale value (g): 686.22
+Scale value (g): 686.30
+Scale value (g): 686.33
+Scale value (g): 686.38
+Scale value (g): 686.24
+Scale value (g): 686.39
+Scale value (g): 686.48
+Scale value (g): 686.16
+Scale value (g): 686.52
+Scale value (g): 686.50
+Scale value (g): 686.32
+Scale value (g): 686.16
+Scale value (g): 686.37
+Scale value (g): 685.90
+Scale value (g): 685.91
+Scale value (g): 686.50
+Scale value (g): 686.16
+Scale value (g): 685.95
+Scale value (g): 686.24
+Scale value (g): 685.95
+Scale value (g): 685.87
+Scale value (g): 686.09
+Scale value (g): 686.22
+Scale value (g): 686.17
+Scale value (g): 686.26
+Scale value (g): 685.87
+Scale value (g): 686.10
+Scale value (g): 686.08
+Scale value (g): 685.83
+Scale value (g): 686.07
+Scale value (g): 685.93
+Scale value (g): 685.83
+Scale value (g): 686.08
+Scale value (g): 685.72
+Scale value (g): 685.89
+Scale value (g): 686.00
+Scale value (g): 686.17
+Scale value (g): 685.90
+Scale value (g): 685.81
+Scale value (g): 685.77
+Scale value (g): 685.82
+Scale value (g): 685.81
+Scale value (g): 685.57
+Scale value (g): 685.85
+Scale value (g): 685.72
+Scale value (g): 685.56
+Scale value (g): 686.02
+Scale value (g): 685.79
+Scale value (g): 685.95
+Scale value (g): 685.74
+Scale value (g): 685.79
+Scale value (g): 685.58
+Scale value (g): 685.90
+Scale value (g): 685.51
+Scale value (g): 685.91
+Scale value (g): 685.84

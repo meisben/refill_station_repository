@@ -1,0 +1,108 @@
+GH filter inactive
+Program commencing...
+Note: That scale is zeroed during program start up. The scale must have no objects placed on it at startup.
+ScalingFactor value (from EEPROM): 1588.48
+Reading mass set-point value for:  250ml 
+ Which has value(g) of: 180
+Reading mass set-point value for:  500ml 
+ Which has value(g) of: 400
+Reading mass set-point value for: 1000ml 
+ Which has value(g) of: 487
+
+Now place fluid receptacle and then press 'right' to start pumping
+
+Scale value (g): -0.07
+Scale value (g): -0.09
+Scale value (g): -0.02
+Scale value (g): -0.00
+Scale value (g): -0.07
+Scale value (g): -0.05
+Scale value (g): 0.03
+Select volume to pump using up, down buttons. Then press right key
+Scale value (g): 300.86
+Scale value (g): 256.11
+Scale value (g): 255.66
+Scale value (g): 255.13
+Scale value (g): 255.31
+Scale value (g): 255.33
+Scale value (g): 255.25
+Scale value (g): 255.24
+Check nozzle is inserted in receptacle, confirm with right key
+Scale value (g): 255.09
+Scale value (g): 255.11
+Scale value (g): 254.75
+Scale value (g): 254.83
+Scale value (g): 254.92
+Scale value (g): 255.09
+Scale value (g): 254.74
+Scale value (g): 254.70
+pumpFluidVolume activated with volume, mass =  500ml , 400 g
+Container mass recorded as =255 g
+Total mass to pump =655 g
+Pumping started
+Scale value (g): 255.20
+filter/scale output myCurrentMass = 256.17
+filter/scale output myCurrentMass = 258.34
+filter/scale output myCurrentMass = 265.63
+filter/scale output myCurrentMass = 272.72
+Scale value (g): 275.84
+filter/scale output myCurrentMass = 278.87
+filter/scale output myCurrentMass = 282.15
+filter/scale output myCurrentMass = 285.54
+filter/scale output myCurrentMass = 288.59
+filter/scale output myCurrentMass = 291.84
+Scale value (g): 295.37
+filter/scale output myCurrentMass = 298.61
+filter/scale output myCurrentMass = 308.18
+filter/scale output myCurrentMass = 311.40
+Scale value (g): -390.68
+filter/scale output myCurrentMass = 314.56
+filter/scale output myCurrentMass = 317.97
+filter/scale output myCurrentMass = 321.20
+filter/scale output myCurrentMass = 324.30
+filter/scale output myCurrentMass = 333.94
+Scale value (g): 337.06
+filter/scale output myCurrentMass = 340.26
+filter/scale output myCurrentMass = 343.58
+filter/scale output myCurrentMass = 346.90
+filter/scale output myCurrentMass = 350.04
+filter/scale output myCurrentMass = 353.26
+Scale value (g): 356.45
+filter/scale output myCurrentMass = 359.74
+filter/scale output myCurrentMass = 369.45
+filter/scale output myCurrentMass = 372.84
+Scale value (g): -390.68
+filter/scale output myCurrentMass = 375.84
+filter/scale output myCurrentMass = 378.99
+filter/scale output myCurrentMass = 382.25
+filter/scale output myCurrentMass = 385.54
+filter/scale output myCurrentMass = 395.22
+Scale value (g): 398.49
+filter/scale output myCurrentMass = 401.90
+filter/scale output myCurrentMass = 405.10
+filter/scale output myCurrentMass = 408.37
+filter/scale output myCurrentMass = 411.60
+filter/scale output myCurrentMass = 414.78
+Scale value (g): 417.86
+filter/scale output myCurrentMass = 421.07
+filter/scale output myCurrentMass = 431.04
+filter/scale output myCurrentMass = 434.10
+Scale value (g): 437.24
+filter/scale output myCurrentMass = 440.60
+filter/scale output myCurrentMass = 443.82
+filter/scale output myCurrentMass = -390.68
+filter/scale output myCurrentMass = 447.21
+Container removed, cancelling pumping!
+filter/scale output myCurrentMass = 453.87
+Cancel button pressed
+Pumping stopped
+Scale value (g): 456.83
+Scale value (g): 460.28
+Select volume to pump using up, down buttons. Then press right key
+Scale value (g): 459.37
+Scale value (g): 459.17
+Scale value (g): 459.08
+Scale value (g): 459.29
+Scale value (g): 459.10
+Scale value (g): 458.98
+Scale value (g): 458.91

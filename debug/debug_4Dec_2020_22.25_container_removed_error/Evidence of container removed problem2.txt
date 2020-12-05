@@ -1,0 +1,99 @@
+Conclusion: the scale error value is -18, and so it's the averaging of two readings which is causing this problem. But by the same logic, I should constantly keep track of a 'currentZero' in state 1, and when a container is placed and pumping starts, all of the error checking can be relative to this 'current zero' which may take account of soap residue in the drip tray.
+
+
+--Log below---
+
+Scale value (g): -0.04
+GH filter inactive
+Program commencing...
+Note: That scale is zeroed during program start up. The scale must have no objects placed on it at startup.
+ScalingFactor value (from EEPROM): 1588.48
+Reading mass set-point value for:  250ml 
+ Which has value(g) of: 180
+Reading mass set-point value for:  500ml 
+ Which has value(g) of: 400
+Reading mass set-point value for: 1000ml 
+ Which has value(g) of: 487
+
+Now place fluid receptacle and then press 'right' to start pumping
+
+Scale value (g): -0.02
+  No container present, mass is: -0.23
+Scale value (g): -0.02
+Scale value (g): -0.22
+  No container present, mass is: 0.08
+Scale value (g): -0.09
+  No container present, mass is: 0.01
+Scale value (g): -0.01
+Scale value (g): 0.12
+  No container present, mass is: -0.06
+Scale value (g): 0.13
+  No container present, mass is: -0.16
+Scale value (g): -0.18
+Scale value (g): 10.16
+Select volume to pump using up, down buttons. Then press right key
+Scale value (g): 345.09
+Scale value (g): 286.36
+Scale value (g): 283.41
+Scale value (g): 281.41
+Scale value (g): 281.58
+Scale value (g): 281.76
+Scale value (g): 281.87
+Scale value (g): 281.76
+Scale value (g): 280.83
+Scale value (g): 280.69
+Scale value (g): 280.69
+Scale value (g): 281.18
+Scale value (g): 280.54
+Check nozzle is inserted in receptacle, confirm with right key
+Scale value (g): 280.43
+pumpFluidVolume activated with volume, mass =  500ml , 400 g
+Container mass recorded as =280 g
+Total mass to pump =680 g
+Pumping started
+Scale value (g): 281.75
+filter/scale output myCurrentMass = 283.51
+filter/scale output myCurrentMass = 285.39
+filter/scale output myCurrentMass = -390.87
+filter/scale output myCurrentMass = 296.67
+Scale value (g): 299.29
+filter/scale output myCurrentMass = 302.89
+filter/scale output myCurrentMass = 305.88
+filter/scale output myCurrentMass = 308.85
+filter/scale output myCurrentMass = 311.86
+filter/scale output myCurrentMass = 315.25
+Scale value (g): -390.87
+filter/scale output myCurrentMass = -390.87
+filter/scale output myCurrentMass = 324.65
+filter/scale output myCurrentMass = 328.05
+filter/scale output myCurrentMass = 331.04
+filter/scale output myCurrentMass = 334.07
+Scale value (g): 337.40
+filter/scale output myCurrentMass = 340.44
+filter/scale output myCurrentMass = 343.55
+filter/scale output myCurrentMass = 346.84
+filter/scale output myCurrentMass = 350.07
+  No container present, mass is: -18.89
+Container removed, cancelling pumping!
+filter/scale output myCurrentMass = 356.10
+Cancel button pressed
+Pumping stopped
+Scale value (g): 359.10
+Scale value (g): 361.17
+Select volume to pump using up, down buttons. Then press right key
+Scale value (g): 360.98
+Scale value (g): 360.88
+Scale value (g): 360.76
+Scale value (g): 360.67
+Scale value (g): 360.65
+Scale value (g): 360.52
+Scale value (g): 360.42
+Scale value (g): 360.25
+Scale value (g): 360.62
+Scale value (g): 360.29
+Scale value (g): 360.08
+Scale value (g): 360.40
+Scale value (g): 360.02
+Scale value (g): 360.04
+Scale value (g): 359.99
+Scale value (g): 359.83
