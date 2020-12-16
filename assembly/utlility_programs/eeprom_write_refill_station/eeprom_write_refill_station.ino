@@ -51,7 +51,7 @@ static LiquidCrystal lcd(LCD_RS, LCD_ENA, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 // For deciding if scaling factor will be stored
-const bool writeScalingFactor = true;
+const bool writeScalingFactor = false;
 const float scalingFactor = 1588.48; //1588.48 for mk2_varC1
 
 // For storing the values relating to the masses in an array
@@ -123,6 +123,7 @@ void setup() {
   lcdPrint("  Writing set-","points to EEPROM",false);
   lcd.setCursor(0,0);
   lcd.write(byte(4));
+  delay(1000);
 
   //Write the mass set points to the EEPROM, each int takes 2 bytes in the address space  
   for (byte i = 0; i < (sizeof(massValues) / sizeof(massValues[0])); i++) {

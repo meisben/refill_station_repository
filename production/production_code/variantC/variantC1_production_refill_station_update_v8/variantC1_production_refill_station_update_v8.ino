@@ -42,7 +42,7 @@
    v_C_3.0 - removed tare error from scale (removed by taring it after a 5s delay to allow any power fluctuations to pass)
    v_C_3.1 - working on removing the bug:  where you zero the scale with a bottle on it, when you take it off it says ready to pump -> should enter state where scale needs re-zeroing
    v_C_3.2 - [Checkpoint] Everything is working
-   v_C_3.3 - working on adding functionality so that if you hold down a button then things will keep pumping until it is released, I'm probably going to use the 'right' button for this as when pressed the button pin voltage should be around zero
+   v_C_3.3 - working on adding functionality so that if you hold down a button then things will keep pumping until it is released, I'm probably going to use the 'right' button for this as when pressed the button pin voltage should be around zero. Currently pump pin is changed to LED Pin on line 224!
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -220,7 +220,8 @@ bool firstTimeInState = false;
 float scalingFactor = 1588.48; //note that this is changed by default on startup by reading custom values from the EEPROM (usually set by utility program pre-production) this is a safety value only
 
 // For pumping trigger
-const int outputPinPump1 =  12; // The output pin assigned to this pump, note this is normally pin '12', but 'LED_BUILTIN' can be usefully used for debugging! Note that it can't share the same pins as the LCD shield ! 
+//const int outputPinPump1 =  12; // The output pin assigned to this pump, note this is normally pin '12', but 'LED_BUILTIN' can be usefully used for debugging! Note that it can't share the same pins as the LCD shield ! 
+const int outputPinPump1 =  LED_BUILTIN;
 bool outputPinPump1_trigger = false; // Used to call the pump trigger
 bool outputPinPump1_triggerActive = false;  // Used to confirm record that it has been implemented
 bool outputPinPump_emergencyStop = false; // Used to cancel pumping
