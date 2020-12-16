@@ -6,7 +6,7 @@
    ~~~~~Details~~~~~~~~~~~~
 
    Authors: Ben Money-Coomes
-   Date: 2/10/20
+   Date: 5/10/20
    Purpose: Production code baseline for prototype refill station (version B2). For usage see Github readme
    References: See Github Readme
 
@@ -36,6 +36,8 @@
    v_C_2.6 - working on writing Mass Set Points to the EEPROM using new states --> all working in v2
    v_C_2.6 - working on removing bug caused by ocassional erroneous big negative HX711 readings
    v_C_2.7 - [Checkpoint] Working version, no major bugs. Need to (1) add compensating factor for pump/fluid intertia, and (2) Periodically prompt user to tare scale if zero drifts
+   v_C_2.7 - working on (1) add compensating factor for pump/fluid intertia
+   v_C_2.8 - [Checkpoint] Added compensating factor for fluid inertia, but discovered bug with extreme high erroneous value from scale
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -118,7 +120,7 @@ const int LOADCELL_SCK_PIN = 3;
 // G-H filter constants -----------------------------
 
 #define GH_FILTER_ACTIVE 0 // --> 1 if active, 0 if inactive
-#define G_CONSTANT 0.3
+#define G_CONSTANT 0.5
 #define H_CONSTANT 0.2
 
 // Error limit - for scale error catching ----------------------------------
@@ -209,6 +211,7 @@ bool outputPinPump_emergencyStop = false; // Used to cancel pumping
 // For storing the masses of interest
 byte massSelectionIndex = 1; // Used to index the massSelection arrays, this defines the default (corresponds to 0.5L)
 int massValues[] = {180, 400, 840}; //note these are changed by default on startup by reading custom values from the EEPROM (usually set by utility program pre-production)
+const int fluidInertiaCompensatingFactor = 15; // compensates for the fluid inertia
 
 // For storing the text relating to the masses in an array
 char massText1[] = " 250ml ";
@@ -912,7 +915,7 @@ bool stateMachine() {
       lcdPrint("  Recording mass", "for set-point", false);
       lcd.setCursor(0,0);
       lcd.write(byte(4)); 
-      massValues[massSelectionIndex] = scale.get_units(3) - containerMass; //the average of x readings from the ADC minus tare weight, divided by the SCALE parameter set with set_scale
+      massValues[massSelectionIndex] = scale.get_units(3) - containerMass - fluidInertiaCompensatingFactor; //the average of x readings from the ADC minus tare weight, divided by the SCALE parameter set with set_scale
       EEPROM.put(MASS_SETPOINT_START_ADDRESS+(2*massSelectionIndex), massValues[massSelectionIndex]); // Write the value to EEPRM
       
       if(debug_verbose){

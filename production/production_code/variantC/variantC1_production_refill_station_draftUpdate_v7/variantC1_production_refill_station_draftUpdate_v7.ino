@@ -6,7 +6,7 @@
    ~~~~~Details~~~~~~~~~~~~
 
    Authors: Ben Money-Coomes
-   Date: 2/10/20
+   Date: 5/10/20
    Purpose: Production code baseline for prototype refill station (version B2). For usage see Github readme
    References: See Github Readme
 
@@ -36,6 +36,12 @@
    v_C_2.6 - working on writing Mass Set Points to the EEPROM using new states --> all working in v2
    v_C_2.6 - working on removing bug caused by ocassional erroneous big negative HX711 readings
    v_C_2.7 - [Checkpoint] Working version, no major bugs. Need to (1) add compensating factor for pump/fluid intertia, and (2) Periodically prompt user to tare scale if zero drifts
+   v_C_2.7 - working on (1) add compensating factor for pump/fluid intertia
+   v_C_2.8 - [Checkpoint] Added compensating factor for fluid inertia, but discovered bug with extreme high erroneous value from scale
+   v_C_2.9 - working on removing extreme high erroneous value from scale (I think i've sold it), There is also a bug where you zero the scale, when you take it off it says ready to pump -> should enter state where scale needs re-zeroing
+   v_C_3.0 - removed tare error from scale (removed by taring it after a 5s delay to allow any power fluctuations to pass)
+   v_C_3.1 - working on removing the bug:  where you zero the scale with a bottle on it, when you take it off it says ready to pump -> should enter state where scale needs re-zeroing
+   v_C_3.2 - [Checkpoint] Everything is working
 */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -118,13 +124,15 @@ const int LOADCELL_SCK_PIN = 3;
 // G-H filter constants -----------------------------
 
 #define GH_FILTER_ACTIVE 0 // --> 1 if active, 0 if inactive
-#define G_CONSTANT 0.3
+#define G_CONSTANT 0.6
 #define H_CONSTANT 0.2
 
 // Error limit - for scale error catching ----------------------------------
 const bool scaleErrorCatching = true; //if true error catching is active and erroneous readings are ignored
 #define NEGATIVE_ERROR_LIMIT -50 //readings below this value are considered an error, if the refill station sees a value below this in state 1, then it will prompt the user to reset the scale before continuing
-#define NEGATIVE_ERROR_TOLLERANCE_DURING_PUMPING -10 //readings below this error during this pumping are considered an error (in the massExceeded function and ignored) because the mass should be increasing approximately linearly. A seperate function still checks if the container has been removed
+#define SCALE_ZERO_ERROR_TOLLERANCE 15 //readings just above or above this value when the program is in state 0 should be considered an error
+#define POSITIVE_ERROR_TOLLERANCE_DURING_PUMPING 500 // readings above this relative number during pumping are considered an error (in the massExceeded function) and ignored. This is because the mass should be increasing approximately linearly. 
+#define NEGATIVE_ERROR_TOLLERANCE_DURING_PUMPING -10 //readings below this relative number during this pumping are considered an error (in the massExceeded function) and ignored. This is because the mass should be increasing approximately linearly. A seperate function still checks if the container has been removed
 float lastMassValue;
 
 // LCD characters ----------------------------------
@@ -189,6 +197,16 @@ const byte tick_symbol[8] = {
   B00000,
 };
 
+const byte warning_mark[8] = {
+  B11111,
+  B11011,
+  B11011,
+  B11011,
+  B11111,
+  B11011,
+  B11111,
+};
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
   Global Variables                                                               *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -209,6 +227,7 @@ bool outputPinPump_emergencyStop = false; // Used to cancel pumping
 // For storing the masses of interest
 byte massSelectionIndex = 1; // Used to index the massSelection arrays, this defines the default (corresponds to 0.5L)
 int massValues[] = {180, 400, 840}; //note these are changed by default on startup by reading custom values from the EEPROM (usually set by utility program pre-production)
+const int fluidInertiaCompensatingFactor = 15; // compensates for the fluid inertia
 
 // For storing the text relating to the masses in an array
 char massText1[] = " 250ml ";
@@ -230,7 +249,7 @@ int massToPump = 0; //used to store the current mass to pump
 bool cancelSignal = false;
 
 // The expected mass of the lightest receptacle and the boolean which keeps track of whether a container is present on the scale
-int expectedContainerMass = 40;
+const int expectedContainerMass = 40;
 bool containerPresent = false;
 
 // To hold the current LCD shield pushbutton state
@@ -242,8 +261,8 @@ bool buttonPressActive = false;
 g_h_filter massFilter(200, 0, 300, G_CONSTANT, H_CONSTANT); //create g-h filter for tracking system state (mass of fluid)
 
 // For debugging
-const bool debug_verbose = true; //if set to true, extra text is printed out
-const bool debug_scaleValue = true; //if set to true, the scale reading is printed out 500ms
+const bool debug_verbose = false; //if set to true, extra text is printed out
+const bool debug_scaleValue = false; //if set to true, the scale reading is printed out 500ms
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
   Start of main program                                                          *
@@ -269,6 +288,7 @@ void setup()
   lcd.createChar(3, left_arrow);
   lcd.createChar(4, hour_glass);
   lcd.createChar(5, tick_symbol);
+  lcd.createChar(6, warning_mark);
   // inform user we are zeroing the scale
   lcdPrint("    Start up    ", "zeroing scale...", false);
   lcd.setCursor(0,0);
@@ -290,11 +310,6 @@ void setup()
   EEPROM.get(SCALING_FACTOR_START_ADDRESS, scalingFactor);
   Serial.print(F("ScalingFactor value (from EEPROM): "));
   Serial.println(scalingFactor);
-
-  // Start communicating with the loadcell -----
-  scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
-  scale.tare(); // reset the scale to 0, so that the reference mass is set
-  scale.set_scale(scalingFactor); // Set scale calibration factor (this is calibrated using the calibration script)
 
   // Read mass set points from the EEPROM
   int temp_val; // local variable
@@ -319,10 +334,12 @@ void setup()
     timer.every(500, printScaleValueToSerial);
   }
 
-  // Program intialiseation messages for User -----  
-  Serial.println(F(""));
-  Serial.println(F("Now place fluid receptacle and then press 'right' to start pumping"));
-  Serial.println(F(""));
+  // Start communicating with the loadcell -----
+  scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
+  scale.set_scale(scalingFactor); // Set scale calibration factor (this is calibrated using the calibration script)
+  // Delay to allow any voltage fluctuations to sort themselves out
+  delay(5000);
+  scale.tare(); // reset the scale to 0, so that the reference mass is set
 
   // Print a ready message to the LCD.
   delay(500); //delay to allow user to read startup message, then print ready message
@@ -412,19 +429,32 @@ bool managePumptriggers() {
     else {
       bool stopSignal = false;
       float myCurrentMass = scale.get_units(1);
+      if (debug_verbose) {
+        Serial.print(F("  scale output myCurrentMass = "));
+        Serial.println(myCurrentMass);  
+      }
 
       // the below if statement is active if the G-H filter is active, and the scale is not returning a erroneous negative reading
       if(GH_FILTER_ACTIVE==1 && !isScaleReadingErroneousDuringPumping(myCurrentMass,lastMassValue)){
-        myCurrentMass = massFilter.return_value(scale.get_units(1));        
+        float myFilterMass = massFilter.return_value(myCurrentMass);
+        if (debug_verbose) {
+          Serial.print(F("    filter output myFilterMass = "));
+          Serial.println(myFilterMass);  
+        }  
+        myCurrentMass = myFilterMass;
       }
       
-      lastMassValue = myCurrentMass; //store the mass reading for error checking
-      
-      if (debug_verbose) {
-        Serial.print("filter/scale output myCurrentMass = ");
-        Serial.println(myCurrentMass);  
+      bool stopSignalMassExceeded = false;
+
+      // Check if reading is erroneous, and if not see if the mass has been exceeded
+      if(!isScaleReadingErroneousDuringPumping(myCurrentMass,lastMassValue)){
+        stopSignalMassExceeded = isMassExceeded(myCurrentMass, massToPump); // returns true if pumping volume is exceeded
       }
-      bool stopSignalMassExceeded = isMassExceeded(myCurrentMass, massToPump); // returns true if pumping volume is exceeded
+
+      if(!isScaleReadingErroneousDuringPumping(myCurrentMass,lastMassValue)){
+        lastMassValue = myCurrentMass; //store the mass reading for error checking  
+      }     
+     
       bool stopSignalCancelButton = manageCancelButton(); //returns true if cancel button is pressed
       stopSignal = (stopSignalMassExceeded || stopSignalCancelButton); // stopSignal takes an logical 'OR' value
 
@@ -480,6 +510,23 @@ bool isContainerPresent() {
   }
 }
 
+// To manage whether a reading when a container is removed is incorrectly interpreted as a container being placed
+bool isContainerRemoved(){
+  float thisCurrentMass = scale.get_units(5); //the average of x readings from the ADC minus tare weight, divided by the SCALE parameter set with set_scale
+  if(debug_verbose){
+    Serial.print(F("isContainerRemoved mass: "));
+    Serial.println(thisCurrentMass);    
+  }
+
+  if(thisCurrentMass <= (-1 * SCALE_ZERO_ERROR_TOLLERANCE)){
+    return true;   
+  }
+  else{
+    return false;
+  }
+  
+}
+
 bool isScaleReadingErroneous(float myReading){
   if(scaleErrorCatching){
     if(myReading < NEGATIVE_ERROR_LIMIT){
@@ -497,14 +544,17 @@ bool isScaleReadingErroneous(float myReading){
 bool isScaleReadingErroneousDuringPumping(float myReading, float myLastReading){
   if(scaleErrorCatching){
 
-    if(myReading < myLastReading + NEGATIVE_ERROR_TOLLERANCE_DURING_PUMPING){
+    if(myReading < myLastReading + NEGATIVE_ERROR_TOLLERANCE_DURING_PUMPING || myReading > myLastReading + POSITIVE_ERROR_TOLLERANCE_DURING_PUMPING){
+//      Serial.println("Reading erroneous");
       return true;
     }
     else{
+//      Serial.println("Reading not erroneous");
       return false;
     }    
   }
   else{
+//    Serial.println("Reading not erroneous");
     return false;
   }
 }
@@ -524,10 +574,20 @@ bool stateMachine() {
       // -->> continue to check if container is placed on scale then move to next program state
       // -->> continue to check if the 'right' button is pressed, in which case initiate Mass Set Point mode
       if (isContainerPresent()) {
-        currentProgramState = 1;
-        buttonPressActive = false; // reset status to ignore any erroneous button presses and wait for next button press (v2.12 edit)
-        Serial.println(F("Select volume to pump using up, down buttons. Then press right key"));
-        lcdShowMassSelectionMenu(massSelectionIndex); //show menu screen for selecting the mass (default last selected)
+        // -->> first check if the reading was valid, to avoid a state where a removed container is interpreted as a placed container
+        if(isContainerRemoved()){
+          currentProgramState = 99;
+          Serial.println(F("Error detected, container removed. Pls reset board"));
+          lcdPrint("  Error detected", "  Removed item", false);
+          lcd.setCursor(0,0);
+          lcd.write(byte(6)); 
+        }
+        else{
+          currentProgramState = 1;
+          buttonPressActive = false; // reset status to ignore any erroneous button presses and wait for next button press (v2.12 edit)
+          Serial.println(F("Select volume to pump using up, down buttons. Then press right key"));
+          lcdShowMassSelectionMenu(massSelectionIndex); //show menu screen for selecting the mass (default last selected)
+        }
       }
 
       if (buttonPressActive) {
@@ -912,7 +972,7 @@ bool stateMachine() {
       lcdPrint("  Recording mass", "for set-point", false);
       lcd.setCursor(0,0);
       lcd.write(byte(4)); 
-      massValues[massSelectionIndex] = scale.get_units(3) - containerMass; //the average of x readings from the ADC minus tare weight, divided by the SCALE parameter set with set_scale
+      massValues[massSelectionIndex] = scale.get_units(3) - containerMass - fluidInertiaCompensatingFactor; //the average of x readings from the ADC minus tare weight, divided by the SCALE parameter set with set_scale
       EEPROM.put(MASS_SETPOINT_START_ADDRESS+(2*massSelectionIndex), massValues[massSelectionIndex]); // Write the value to EEPRM
       
       if(debug_verbose){
@@ -945,6 +1005,17 @@ bool stateMachine() {
         Serial.print(F("Place container to start refill"));
       }
       break;
+
+
+      case 99:
+      // In case container is removed, or error is detected and user needs to manually reset board
+      // -->> print error message after some time to allow error code to be displayed
+      // -->> Remain in this state indefinitely until the board is reset
+
+      delay(2000);
+      lcdPrint("  Clear scale", "  Press reset", false);
+      lcd.setCursor(0,0);
+      lcd.write(byte(6)); 
       
       
   }
