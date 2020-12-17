@@ -226,6 +226,20 @@ bool outputPinPump1_trigger = false; // Used to call the pump trigger
 bool outputPinPump1_triggerActive = false;  // Used to confirm record that it has been implemented
 bool outputPinPump_emergencyStop = false; // Used to cancel pumping
 
+// For parameters relating to the mode menu
+byte modeSelectionIndex = 0; // Used to index the modeSelection arrays, this defines the default (corresponds to manual Mode)
+
+// For storing the text relating to the modes in an array
+const char modeText1[] = "Manual";
+const char modeText2[] = "Set point";
+
+const char * modeStrings[] =
+{
+  modeText1,
+  modeText2,
+};
+
+
 // For storing the masses of interest
 byte massSelectionIndex = 1; // Used to index the massSelection arrays, this defines the default (corresponds to 0.5L)
 int massValues[] = {180, 400, 840}; //note these are changed by default on startup by reading custom values from the EEPROM (usually set by utility program pre-production)
@@ -773,6 +787,13 @@ bool stateMachine() {
 
     // --------
     // The cases above this line deal with the core functionality
+    // The cases below deal with the mode menu
+    // -------
+
+    // I need to edit here!!  
+
+    // --------
+    // The cases above this line deal with the mode menu
     // The cases below deal with set point mode
     // -------
 
@@ -1068,4 +1089,19 @@ void lcdShowSetPointSelectionMenu(byte myIndex){
   lcd.write(byte(0));
   lcd.setCursor(15, 1);
   lcd.write(byte(2)); 
+}
+
+void lcdShowModeSelectionMenu(byte myIndex){
+  // for the indexes 0-> corresponds to Manual Mode, 1-> corresponds to Set Point Mode
+  lcd.setCursor(2,0);
+  lcd.print(modeStrings[0]);
+  lcd.setCursor(2,1);
+  lcd.print(modeStrings[1]);
+  if(myIndex==0){
+    lcd.setCursor(0,0);
+  }
+  else{
+    lcd.setCursor(0,1);
+  }
+  lcd.write(byte(2));
 }
