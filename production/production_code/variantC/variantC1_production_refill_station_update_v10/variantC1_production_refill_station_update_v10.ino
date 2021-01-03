@@ -44,6 +44,8 @@
    v_C_3.2 - [Checkpoint] Everything is working
    v_C_3.3 - working on adding functionality so that if you hold down a button then things will keep pumping until it is released, I'm probably going to use the 'right' button for this as when pressed the button pin voltage should be around zero. Currently pump pin is changed to LED Pin on line 224!
    v_C_3.4 - This is working ! Just need to add actual pin turn on to manual mode. And then sort out the menu order. State machine has been updated to best practice. Also removing totally the printLCD function will free up a LOT of memory!
+   v_C_3.5 - Working on the issues above (printLCD -> removed) (Output pin -> added)
+   v_C_3.6 - Working on the issues above
 
 */
 
@@ -220,6 +222,46 @@ const byte info_sign[8] = {
   B11111,
 };
 
+const byte g_top_left[8] = {
+  B11111,
+  B11111,
+  B11000,
+  B11000,
+  B11000,
+  B11000,
+  B11000,
+};
+
+const byte g_top_right[8] = {
+  B11111,
+  B11111,
+  B00011,
+  B00000,
+  B00000,
+  B00000,
+  B00000,
+};
+
+const byte g_bottom_left[8] = {
+  B11000,
+  B11000,
+  B11000,
+  B11000,
+  B11000,
+  B11111,
+  B11111,
+};
+
+const byte g_bottom_right[8] = {
+  B00000,
+  B00111,
+  B00111,
+  B00011,
+  B00011,
+  B11111,
+  B11111,
+};
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
   Global Variables                                                               *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -254,8 +296,8 @@ bool firstTimeInState = false;
 float scalingFactor = 1588.48; //note that this is changed by default on startup by reading custom values from the EEPROM (usually set by utility program pre-production) this is a safety value only
 
 // For pumping trigger
-//const int outputPinPump1 =  12; // The output pin assigned to this pump, note this is normally pin '12', but 'LED_BUILTIN' can be usefully used for debugging! Note that it can't share the same pins as the LCD shield !
-const int outputPinPump1 =  LED_BUILTIN;
+const int outputPinPump1 =  12; // The output pin assigned to this pump, note this is normally pin '12', but 'LED_BUILTIN' can be usefully used for debugging! Note that it can't share the same pins as the LCD shield !
+//const int outputPinPump1 =  LED_BUILTIN;
 bool outputPinPump1_trigger = false; // Used to call the pump trigger
 bool outputPinPump1_triggerActive = false;  // Used to confirm record that it has been implemented
 bool outputPinPump_emergencyStop = false; // Used to cancel pumping
@@ -327,18 +369,23 @@ void setup()
   pinMode(outputPinPump1, OUTPUT);
   digitalWrite(outputPinPump1, LOW);   // turn the output off
 
-  // Start serial communications -----
-  Serial.begin(9600);
-
   // Set up the LCD ------
   // set up the LCD's number of columns and rows:
   lcd.begin(16, 2);
+  lcd.clear();
 
-  // inform user we are zeroing the scale
-  lcdPrint("    Start up    ", "zeroing scale...", false);
-  lcd.setCursor(0, 0);
-  lcd.write(byte(4));
+  // Start serial communications -----
+  Serial.begin(9600);
 
+  // Create custom characters for boot screen
+  lcd.createChar(0, g_top_left);
+  lcd.createChar(1, g_top_right);
+  lcd.createChar(2, g_bottom_left);
+  lcd.createChar(3, g_bottom_right);
+
+  // Show the boot screen
+  lcdShowGreenGreenBootScreen();
+  delay(2000);
 
   // Create custom characters
   lcd.createChar(0, up_arrow);
@@ -350,6 +397,14 @@ void setup()
   lcd.createChar(6, warning_mark);
   lcd.createChar(7, info_sign);
 
+  // inform user we are zeroing the scale
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.write(byte(4));
+  lcd.setCursor(4, 0);
+  lcd.print(F("Start up"));
+  lcd.setCursor(0, 1);
+  lcd.print(F("zeroing scale..."));
 
   // information on GH filter
   if (GH_FILTER_ACTIVE == 1) {
@@ -395,12 +450,12 @@ void setup()
   scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
   scale.set_scale(scalingFactor); // Set scale calibration factor (this is calibrated using the calibration script)
   // Delay to allow any voltage fluctuations to sort themselves out
-  delay(5000);
+  delay(3000);
   scale.tare(); // reset the scale to 0, so that the reference mass is set
 
   // Print a ready message to the LCD.
   delay(500); //delay to allow user to read startup message, then print ready message
-  lcdPrint("Ready...", "place receptacle", false);
+  lcdPrintStateNoContainer();
 
 }
 
@@ -638,7 +693,11 @@ bool stateMachine() {
         if (isContainerRemoved()) {
           currentProgramState = STATE_ErrorContainerRemoved;
           Serial.println(F("Error detected, container removed. Pls reset board"));
-          lcdPrint("  Error detected", "  Removed item", false);
+          lcd.clear();
+          lcd.setCursor(2,0);
+          lcd.print(F("Error detected"));
+          lcd.setCursor(2,1);
+          lcd.print(F("Removed item"));
           lcd.setCursor(0, 0);
           lcd.write(byte(6));
         }
@@ -657,29 +716,22 @@ bool stateMachine() {
           case 'S': //select button
             break;
           case 'L': //left button
-            currentProgramState = STATE_MenuTitle;
-            lcdPrint("       Menu", "", false);
-            lcd.setCursor(5, 0);
-            lcd.write(byte(7));
-            lcd.setCursor(0, 1);
-            lcd.write(byte(3));
-            lcd.setCursor(15, 1);
-            lcd.write(byte(2));
             break;
           case 'U': //up button
             break;
           case 'D': //down button
             break;
           case 'R': //right button
-            currentProgramState = STATE_SetPointTitle;
-            Serial.println(F("-- Set point Mode --"));
+            currentProgramState = STATE_MenuTitle;
             lcd.clear();
-            lcd.setCursor(0, 0);
-            lcd.print(F("Set-Point Mode"));
+            lcd.setCursor(7,0);
+            lcd.print(F("Menu"));
+            lcd.setCursor(3,1);
+            lcd.print(F("Continue?"));
+            lcd.setCursor(5, 0);
+            lcd.write(byte(7));
             lcd.setCursor(0, 1);
             lcd.write(byte(3));
-            lcd.setCursor(3, 1);
-            lcd.print(F("Continue?"));
             lcd.setCursor(15, 1);
             lcd.write(byte(2));
             break;
@@ -743,7 +795,7 @@ bool stateMachine() {
       if (!isContainerPresent()) {
         // if container is removed
         currentProgramState = STATE_noContainer;
-        lcdPrint("Ready...", "place receptacle", false);
+        lcdPrintStateNoContainer();
         break;
       }
       break;
@@ -785,7 +837,6 @@ bool stateMachine() {
 
       if (outputPinPump1_trigger) {
         currentProgramState = STATE_AutoPumpingCommandActive;
-//        lcdPrint("Pumping! Press", "'S' to cancel", false);
         lcd.clear();
         lcd.setCursor(0,0);
         lcd.print(F("Pumping! Press"));
@@ -796,7 +847,7 @@ bool stateMachine() {
       if (!isContainerPresent()) {
         // if container is removed
         currentProgramState = STATE_noContainer;
-        lcdPrint("Ready...", "place receptacle", false);
+        lcdPrintStateNoContainer();
         break;
       }
       break;
@@ -820,7 +871,7 @@ bool stateMachine() {
         cancelSignal = true; // act as a cancel button to stop pumping
         Serial.println(F("Container removed, cancelling pumping!"));
         currentProgramState = STATE_noContainer;
-        lcdPrint("Ready...", "place receptacle", false);
+        lcdPrintStateNoContainer();
         break;
       }
 
@@ -834,7 +885,6 @@ bool stateMachine() {
       // // Pumping is finished
       // -->> waiting for container to be removed
       if (firstTimeInState) {
-//        lcdPrint("Finished! remove", "receptacle", false);
         lcd.clear();
         lcd.setCursor(0,0);
         lcd.print(F("Finished! remove"));
@@ -846,7 +896,7 @@ bool stateMachine() {
       if (!isContainerPresent()) {
         // if container is removed
         currentProgramState = STATE_noContainer;
-        lcdPrint("Ready...", "place receptacle", false);
+        lcdPrintStateNoContainer();
       }
       break;
 
@@ -875,7 +925,7 @@ bool stateMachine() {
           case 'L': //left button
             // move to previous state
             currentProgramState = STATE_noContainer;
-            lcdPrint("Ready...", "place receptacle", false);
+            lcdPrintStateNoContainer();
             break;
           case 'U': //up button
             break;
@@ -906,7 +956,7 @@ bool stateMachine() {
           case 'L': //left button
             // move to previous state
             currentProgramState = STATE_noContainer;
-            lcdPrint("Ready...", "place receptacle", false);
+            lcdPrintStateNoContainer();
             break;
           case 'U': //up button
             if (modeSelectionIndex == 1) {
@@ -930,7 +980,6 @@ bool stateMachine() {
             if (modeSelectionIndex == 0) {
               //Move to manual pumping check screen
               currentProgramState = STATE_ManualContainerCheck;
-//              lcdPrint("  Is container", "   on scale?", false);
               lcd.clear();
               lcd.setCursor(2,0);
               lcd.print(F("Is container"));
@@ -982,7 +1031,7 @@ bool stateMachine() {
           case 'L': //left button
             // move to previous state
             currentProgramState = STATE_noContainer;
-            lcdPrint("Ready...", "place receptacle", false);
+            lcdPrintStateNoContainer();
             break;
           case 'U': //up button
             break;
@@ -991,7 +1040,6 @@ bool stateMachine() {
           case 'R': //right button
             currentProgramState = STATE_ManualPumping;
             //Move to manual pumping mode
-//            lcdPrint("  Hold RIGHT", "button to pump", false);
             lcd.clear();
             lcd.setCursor(2,0);
             lcd.print(F("Hold RIGHT"));
@@ -1012,6 +1060,42 @@ bool stateMachine() {
       // -->> continue to check if right (next) button press is issued, then keep pumping
       // -->> continue to check if container is removed then display pumped mass and return to state 0
 
+      int buttonValue = analogRead(ANALOG_SWITCH_PIN);
+
+      if (buttonValue <= 5) {
+        // if right button is pressed
+        if (!manualPumpingStarted) {
+          manualPumpingStarted = true;
+          // start pumping and write text to screen
+          digitalWrite(outputPinPump1, HIGH);   // turn the output off
+          lcd.clear();
+          lcd.setCursor(2,0);
+          lcd.print(F("To stop pump"));
+          lcd.setCursor(0,1);
+          lcd.print(F("release button"));
+          lcd.setCursor(0, 0);
+          lcd.write(byte(7));
+        }
+        else {
+          // do nothing because pump is already running
+        }
+      }
+      else {
+        // if right button is not pressed or relased
+        if (manualPumpingStarted) {
+          manualPumpingStarted = false;
+          // stop pumping and write text to screen
+          digitalWrite(outputPinPump1, LOW);   // turn the output off
+          lcd.clear();
+          lcd.setCursor(2,0);
+          lcd.print(F("Press LEFT"));
+          lcd.setCursor(0,1);
+          lcd.print(F("button to finish"));
+          lcd.setCursor(0, 0);
+          lcd.write(byte(7));
+        }
+      }
+
       if (buttonPressActive) {
         buttonPressActive = false; // reset status to wait for next button press
 
@@ -1021,7 +1105,6 @@ bool stateMachine() {
           case 'L': //left button
             // move to previous state
             currentProgramState = STATE_ManualContainerRemovalCheck;
-//            lcdPrint("  Is container", "    removed?", false);
             lcd.clear();
             lcd.setCursor(2,0);
             lcd.print(F("Is container"));
@@ -1042,42 +1125,7 @@ bool stateMachine() {
             break;
         }
       }
-
-      int buttonValue = analogRead(ANALOG_SWITCH_PIN);
-
-      if (buttonValue <= 5) {
-        // if right button is pressed
-        if (!manualPumpingStarted) {
-          manualPumpingStarted = true;
-//          lcdPrint("  To stop pump", "release button", false);
-          lcd.clear();
-          lcd.setCursor(2,0);
-          lcd.print(F("To stop pump"));
-          lcd.setCursor(0,1);
-          lcd.print(F("release button?"));
-          lcd.setCursor(0, 0);
-          lcd.write(byte(7));
-          // start pumping and write text to screen
-        }
-        else {
-          // do nothing because pump is already running
-        }
-      }
-      else {
-        // if right button is not pressed or relased
-        if (manualPumpingStarted) {
-          manualPumpingStarted = false;
-//          lcdPrint("  Press LEFT", "button to finish", false);
-          lcd.clear();
-          lcd.setCursor(2,0);
-          lcd.print(F("Press LEFT"));
-          lcd.setCursor(0,1);
-          lcd.print(F("button to finish"));
-          lcd.setCursor(0, 0);
-          lcd.write(byte(7));
-          // stop pumping and write text to screen
-        }
-      }
+      
       break;
     }
     
@@ -1097,7 +1145,6 @@ bool stateMachine() {
             // move to previous state
             currentProgramState = STATE_ManualPumping;
             //Move to manual pumping mode
-//            lcdPrint("  Hold RIGHT", "button to pump", false);
             lcd.clear();
             lcd.setCursor(2,0);
             lcd.print(F("Hold RIGHT"));
@@ -1113,7 +1160,7 @@ bool stateMachine() {
           case 'R': //right button
             // move to home state
             currentProgramState = STATE_noContainer;
-            lcdPrint("Ready...", "place receptacle", false);
+            lcdPrintStateNoContainer();
             break;
         }
       }
@@ -1140,7 +1187,7 @@ bool stateMachine() {
           case 'L': //left button
             // move to previous state
             currentProgramState = STATE_noContainer;
-            lcdPrint("Ready...", "place receptacle", false);
+            lcdPrintStateNoContainer();
             break;
           case 'U': //up button
             break;
@@ -1149,7 +1196,6 @@ bool stateMachine() {
           case 'R': //right button
             currentProgramState = STATE_SetPointDescription;
             // describe set point mode
-//            lcdPrint("For set-point", "recalibration ", false);
             lcd.clear();
             lcd.setCursor(0,0);
             lcd.print(F("For set-point"));
@@ -1179,7 +1225,7 @@ bool stateMachine() {
           case 'L': //left button
             // move to previous state
             currentProgramState = STATE_noContainer;
-            lcdPrint("Ready...", "place receptacle", false);
+            lcdPrintStateNoContainer();
             break;
           case 'U': //up button
             break;
@@ -1210,7 +1256,7 @@ bool stateMachine() {
           case 'L': //left button
             // move to previous state
             currentProgramState = STATE_noContainer;
-            lcdPrint("Ready...", "place receptacle", false);
+            lcdPrintStateNoContainer();
             break;
           case 'U': //up button
             if (massSelectionIndex == 2) {
@@ -1233,7 +1279,6 @@ bool stateMachine() {
           case 'R': //right button
             currentProgramState = STATE_SetPointContainerCheck;
             // ask: Is container placed on scale?
-//            lcdPrint("Is container on", "scale?", false);
             lcd.clear();
             lcd.setCursor(0,0);
             lcd.print(F("Is container on"));
@@ -1264,7 +1309,7 @@ bool stateMachine() {
           case 'L': //left button
             // move to previous state
             currentProgramState = STATE_noContainer;
-            lcdPrint("Ready...", "place receptacle", false);
+            lcdPrintStateNoContainer();
             break;
           case 'U': //up button
             break;
@@ -1287,7 +1332,11 @@ bool stateMachine() {
       // -->> continue to check if left  (back) button press is issued, then move to previous program state
 
       Serial.println(F("Recording container mass"));
-      lcdPrint("  Recording mass", "of container...", false);
+      lcd.clear();
+      lcd.setCursor(2,0);
+      lcd.print(F("Recording mass"));
+      lcd.setCursor(0,1);
+      lcd.print(F("of container..."));
       lcd.setCursor(0, 0);
       lcd.write(byte(4));
       containerMass = scale.get_units(3); //the average of x readings from the ADC minus tare weight, divided by the SCALE parameter set with set_scale
@@ -1302,7 +1351,6 @@ bool stateMachine() {
       delay(1000);
 
       currentProgramState = STATE_SetPointFillCheck;
-//      lcdPrint("Fill container", "to set point", false);
       lcd.clear();
       lcd.setCursor(0,0);
       lcd.print(F("Fill container"));
@@ -1328,7 +1376,7 @@ bool stateMachine() {
           case 'L': //left button
             // move to previous state
             currentProgramState = STATE_noContainer;
-            lcdPrint("Ready...", "place receptacle", false);
+            lcdPrintStateNoContainer();
             break;
           case 'U': //up button
             break;
@@ -1349,7 +1397,6 @@ bool stateMachine() {
       // -->> record the set-point mass
       // -->> save it to the correct indexed EEPROM address
 
-//      lcdPrint("  Recording mass", "for set-point", false);
       lcd.clear();
       lcd.setCursor(2,0);
       lcd.print(F("Recording mass"));
@@ -1368,7 +1415,6 @@ bool stateMachine() {
       }
       delay(1000);
 
-//      lcdPrint("Complete! set-", "point recorded", false);
       lcd.clear();
       lcd.setCursor(0,0);
       lcd.print(F("Complete! set-"));
@@ -1378,7 +1424,6 @@ bool stateMachine() {
 
       Serial.print(F("Done! Remove container!"));
       currentProgramState = STATE_SetPointContainerRemoval;
-//      lcdPrint("  Done!", "Remove container!", false);
       lcd.clear();
       lcd.setCursor(2,0);
       lcd.print(F("Done!"));
@@ -1398,7 +1443,7 @@ bool stateMachine() {
       if (abs(scale.get_units(3)) < 30) {
         // move to previous state
         currentProgramState = STATE_noContainer;
-        lcdPrint("Ready...", "place receptacle", false);
+        lcdPrintStateNoContainer();
         Serial.print(F("Place container to start refill"));
       }
       break;
@@ -1412,7 +1457,6 @@ bool stateMachine() {
       // -->> Remain in this state indefinitely until the board is reset
 
       delay(2000);
-//      lcdPrint("  Clear scale", "  Press reset", false);
       lcd.clear();
       lcd.setCursor(2,0);
       lcd.print(F("Clear scale"));
@@ -1428,20 +1472,14 @@ bool stateMachine() {
   return true; // to repeat with the timer
 }
 
-
-void lcdPrint(char *lcdString1, char *lcdString2, bool autoscrollStatus) {
+void lcdPrintStateNoContainer(){
   lcd.clear();
-  if (autoscrollStatus) {
-    lcd.autoscroll();
-  }
-  else {
-    lcd.noAutoscroll();
-  }
-
+  lcd.setCursor(2,0);
+  lcd.print(F("Ready..."));
+  lcd.setCursor(0,1);
+  lcd.print(F("Place container"));
   lcd.setCursor(0, 0);
-  lcd.print(lcdString1);
-  lcd.setCursor(0, 1);
-  lcd.print(lcdString2);
+  lcd.write(byte(5));
 }
 
 void emergencyStop() {
@@ -1452,7 +1490,9 @@ void emergencyStop() {
 
 void lcdShowMassSelectionMenu(byte myIndex) {
   // for the indexes 0-> corresponds to 250ml, 1-> corresponds to 500ml, 2-> corresponds to 1L
-  lcdPrint("Select volume", "", false);
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print(F("Select volume"));
   lcd.setCursor(0, 1);
   lcd.print(massStrings[myIndex]);
   lcd.write(byte(1));
@@ -1463,7 +1503,9 @@ void lcdShowMassSelectionMenu(byte myIndex) {
 
 void lcdShowSetPointSelectionMenu(byte myIndex) {
   // for the indexes 0-> corresponds to 250ml, 1-> corresponds to 500ml, 2-> corresponds to 1L
-  lcdPrint("Select set-point", "", false);
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print(F("Select set-point"));
   lcd.setCursor(0, 1);
   lcd.print(massStrings[myIndex]);
   lcd.write(byte(1));
@@ -1486,4 +1528,23 @@ void lcdShowModeSelectionMenu(byte myIndex) {
     lcd.setCursor(0, 1);
   }
   lcd.write(byte(2));
+}
+
+void lcdShowGreenGreenBootScreen(){
+  lcd.clear();
+  lcd.setCursor(1, 0);
+  lcd.write(byte(0));
+  lcd.write(byte(1));
+  lcd.setCursor(1, 1);
+  lcd.write(byte(2));
+  lcd.write(byte(3));
+  lcd.print(F("reen"));
+
+  lcd.setCursor(8, 0);
+  lcd.write(byte(0));
+  lcd.write(byte(1));
+  lcd.setCursor(8, 1);
+  lcd.write(byte(2));
+  lcd.write(byte(3));
+  lcd.print(F("reen"));
 }

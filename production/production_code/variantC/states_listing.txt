@@ -1,0 +1,27 @@
+// the possible states of the state-machine
+typedef enum { STATE_1, 
+               STATE_2, 
+               STATE_3, 
+               STATE_4, 
+               STATE_5} states;
+
+
+STATE_noContainer,					0
+STATE_WaitForSelectionCommand,				1
+STATE_WaitForPumpCommand,				2
+STATE_AutoPumpingCommandActive,				3
+STATE_AutoPumpingFinished,				4
+STATE_MenuTitle,					5
+STATE_MenuScreen,					6
+STATE_ManualContainerCheck,				7
+STATE_ManualPumping,					8
+STATE_ManualContainerRemovalCheck,			9
+STATE_SetPointTitle,					30	10
+STATE_SetPointDescription,				31	11
+STATE_SetPointMenu,					32	12
+STATE_SetPointContainerCheck,				33	13
+STATE_SetPointRecordContainerMass,			34	14
+STATE_SetPointFillCheck,				35	15
+STATE_SetPointRecordFluidMass,				36	16	
+STATE_SetPointContainerRemoval,				37	17	
+STATE_ErrorContainerRemoved,				99	18
