@@ -47,6 +47,8 @@
    v_C_3.5 - Working on the issues above (printLCD -> removed) (Output pin -> added)
    v_C_3.6 - Working on the issues above 
    v_C_3.7 - [Checkpoint] Everything is working, stable version
+   v_C_3.8 - Adding a custom value to the setpoints with title 'Custom' which will have intial value same as 250 ml
+   v_C_3.9 - [Checkpoint] Everything is working, stable version
 
 */
 
@@ -321,19 +323,21 @@ bool manualPumpingStarted = false;
 
 // For storing the masses of interest
 byte massSelectionIndex = 1; // Used to index the massSelection arrays, this defines the default (corresponds to 0.5L)
-int massValues[] = {180, 400, 840}; //note these are changed by default on startup by reading custom values from the EEPROM (usually set by utility program pre-production)
+int massValues[] = {180, 400, 840, 180}; //note these are changed by default on startup by reading custom values from the EEPROM (usually set by utility program pre-production)
 const int fluidInertiaCompensatingFactor = 15; // compensates for the fluid inertia
 
 // For storing the text relating to the masses in an array
 char massText1[] = " 250ml ";
 char massText2[] = " 500ml ";
 char massText3[] = "1000ml ";
+char massText4[] = "Custom ";
 
 char * massStrings[] =
 {
   massText1,
   massText2,
-  massText3
+  massText3,
+  massText4
 };
 
 // For storing the container/bottle mass, and the mass to pump
@@ -760,7 +764,7 @@ bool stateMachine() {
             //Do nothing
             break;
           case 'U': //up button
-            if (massSelectionIndex == 2) {
+            if (massSelectionIndex == 3) {
               massSelectionIndex = 0;
             }
             else {
@@ -1260,7 +1264,7 @@ bool stateMachine() {
             lcdPrintStateNoContainer();
             break;
           case 'U': //up button
-            if (massSelectionIndex == 2) {
+            if (massSelectionIndex == 3) {
               massSelectionIndex = 0;
             }
             else {
@@ -1503,7 +1507,7 @@ void lcdShowMassSelectionMenu(byte myIndex) {
 }
 
 void lcdShowSetPointSelectionMenu(byte myIndex) {
-  // for the indexes 0-> corresponds to 250ml, 1-> corresponds to 500ml, 2-> corresponds to 1L
+  // for the indexes 0-> corresponds to 250ml, 1-> corresponds to 500ml, 2-> corresponds to 1L, 3-> correponds to 'Custom'
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print(F("Select set-point"));

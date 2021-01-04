@@ -55,18 +55,20 @@ const bool writeScalingFactor = false;
 const float scalingFactor = 1588.48; //1588.48 for mk2_varC1
 
 // For storing the values relating to the masses in an array
-int massValues[] = {180, 400, 840};
+int massValues[] = {180, 400, 840, 180};
 
 // For storing the text relating to the masses in an array
 char massText1[] = " 250ml ";
 char massText2[] = " 500ml ";
 char massText3[] = "1000ml ";
+char massText4[] = "Custom ";
 
 char * massStrings[] =
 {
   massText1,
   massText2,
-  massText3
+  massText3,
+  massText4
 };
 
 // Custom LCD screen characters
