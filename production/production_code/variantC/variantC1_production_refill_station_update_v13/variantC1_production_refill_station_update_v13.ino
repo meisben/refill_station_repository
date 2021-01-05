@@ -52,6 +52,7 @@
    v_C_4.0 - [Checkpoint] Working on removing bugs, which (1) erroneouly cause menus to be entered into sometimes because 'buttonActive' isn't reset, (2) adjusting fudge factor for setpoint to reduce this by half, (3) the set point mode and manual mode should return to menu if the left button is pressed
    v_C_4.1 - In the above list of issued (2) has been solved. (1) and (3) have also been solved :) ! 
    v_C_4.2 - [Checkpoint] Everything is generally working but the buttons often result in the wrong input, they're a bit of a nightmare. In next version i will be trying to add an if statement with a timer to the button function to resolve this
+   v_C_4.3 - as explained in above line. I've implemented this and i'm testing it now
 
 */
 
@@ -359,6 +360,12 @@ MD_UISwitch::keyResult_t buttonState;
 char lastButtonPressed = 'Z'; // initialised to an unused char
 bool buttonPressActive = false;
 
+// To implement the pushbutton timer (to have a kind of debouncing effect
+bool bpaTimerStatus = false;
+unsigned long bpaTimerStartTime;
+unsigned long bpaTimeNow;
+int bpaWaitTime = 350; // wait time in milli seconds after the bool variable 'buttonPressActive' is set to false, before another button press is registered
+
 // Initialise g-h filter
 g_h_filter massFilter(200, 0, 300, G_CONSTANT, H_CONSTANT); //create g-h filter for tracking system state (mass of fluid)
 
@@ -491,7 +498,7 @@ bool readLCDShieldButtons() {
     //    case MD_UISwitch::KEY_UP:                                      break;
     //    case MD_UISwitch::KEY_DOWN:                                    break;
     case MD_UISwitch::KEY_PRESS:           //Serial.println("KEY_PRESS");
-      buttonPressActive = true;
+
       lastButtonPressed = (char)pushbuttonSwitch.getKey(); //global variable
       switch (lastButtonPressed) // if you need a default button behaviour enter it here
       {
@@ -500,6 +507,13 @@ bool readLCDShieldButtons() {
           //          Serial.println(F("Debug:S pressed"));
           break;
       }
+      if(!buttonPressActive){
+        bool result = isButtonPressActiveTimerComplete();
+        if(result){
+          buttonPressActive = true;
+        }
+      }     
+      
       break;
       //    case MD_UISwitch::KEY_DPRESS:    Serial.println("KEY_LONGPRESS"); break;
       //    case MD_UISwitch::KEY_LONGPRESS: Serial.println("KEY_LONGPRESS"); break;
@@ -677,6 +691,30 @@ bool isScaleReadingErroneousDuringPumping(float myReading, float myLastReading) 
   else {
     //    Serial.println("Reading not erroneous");
     return false;
+  }
+}
+
+bool isButtonPressActiveTimerComplete(){
+  // This function is used to add a timer to the button press sensing function. It has a kind of deboucing effect (hopefully!)
+  // when bool bpaTimerStatus is true then the timer is active
+  if(!bpaTimerStatus){
+    //if the timer is not active, i.e. first call of this function after bool buttonPressActive is set to false
+    bpaTimerStartTime = millis();
+    bpaTimerStatus = true;
+    return false; // return false as the function return value because the timer is not complete
+  }
+  else{
+    //if the timer is active
+    bpaTimeNow = millis();
+    unsigned long timePassed = abs(bpaTimeNow - bpaTimerStartTime);
+
+    if(timePassed > bpaWaitTime){
+      return true; // timer is complete
+    }
+    else{
+      return false; // timer is not complete
+    }
+    
   }
 }
 
