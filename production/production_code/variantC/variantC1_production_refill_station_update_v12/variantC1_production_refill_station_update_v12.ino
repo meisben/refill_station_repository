@@ -49,7 +49,8 @@
    v_C_3.7 - [Checkpoint] Everything is working, stable version
    v_C_3.8 - Adding a custom value to the setpoints with title 'Custom' which will have intial value same as 250 ml
    v_C_3.9 - [Checkpoint] Everything is working, stable version
-   v_C_4.0 - [Checkpoint] Removing bug which enters into menu sometimes after automatic pumping erroneously
+   v_C_4.0 - [Checkpoint] Working on removing bugs, which (1) erroneouly cause menus to be entered into sometimes because 'buttonActive' isn't reset, (2) adjusting fudge factor for setpoint to reduce this by half, (3) the set point mode and manual mode should return to menu if the left button is pressed
+   v_C_4.1 - In the above list of issued (2) has been solved. (1) and (3) have also been solved :) ! 
 
 */
 
@@ -325,7 +326,7 @@ bool manualPumpingStarted = false;
 // For storing the masses of interest
 byte massSelectionIndex = 1; // Used to index the massSelection arrays, this defines the default (corresponds to 0.5L)
 int massValues[] = {180, 400, 840, 180}; //note these are changed by default on startup by reading custom values from the EEPROM (usually set by utility program pre-production)
-const int fluidInertiaCompensatingFactor = 15; // compensates for the fluid inertia
+const int fluidInertiaCompensatingFactor = 14; // compensates for the fluid inertia (n.b. used to be set at 15, adjusted to 9 as a test for accuracy. If this is too low the bottle may overfill)
 
 // For storing the text relating to the masses in an array
 char massText1[] = " 250ml ";
@@ -940,6 +941,7 @@ bool stateMachine() {
             break;
           case 'R': //right button
             currentProgramState = STATE_MenuScreen;
+            buttonPressActive = false; // reset status to wait for next button press
             lcdShowModeSelectionMenu(modeSelectionIndex); //show menu screen for selecting the mass set-point
             break;
         }
@@ -1026,8 +1028,8 @@ bool stateMachine() {
     case STATE_ManualContainerCheck:
     {
       // Manual pumping mode continer check screen
-      // -->> continue to check if right (next) button press is issued, then keep pumping
-      // -->> continue to check if container is removed then display pumped mass and return to state 0
+      // -->> continue to check if right (next) button press is issued, then move to the next state
+      // -->> continue to check if left button is pressed, then move to previous state
 
       if (buttonPressActive) {
         buttonPressActive = false; // reset status to wait for next button press
@@ -1037,8 +1039,9 @@ bool stateMachine() {
             break;
           case 'L': //left button
             // move to previous state
-            currentProgramState = STATE_noContainer;
-            lcdPrintStateNoContainer();
+            currentProgramState = STATE_MenuScreen;
+            buttonPressActive = false; // reset status to wait for next button press
+            lcdShowModeSelectionMenu(modeSelectionIndex); //show menu screen for selecting the mass set-point
             break;
           case 'U': //up button
             break;
@@ -1054,6 +1057,7 @@ bool stateMachine() {
             lcd.print(F("button to pump"));
             lcd.setCursor(0, 0);
             lcd.write(byte(7));
+            buttonPressActive = false; // reset status to wait for next button press
             break;
         }
       }
@@ -1110,7 +1114,7 @@ bool stateMachine() {
           case 'S': //select button
             break;
           case 'L': //left button
-            // move to previous state
+            // move to next program state
             currentProgramState = STATE_ManualContainerRemovalCheck;
             lcd.clear();
             lcd.setCursor(2,0);
@@ -1123,6 +1127,7 @@ bool stateMachine() {
             lcd.write(byte(3));
             lcd.setCursor(15, 1);
             lcd.write(byte(2));
+            buttonPressActive = false; // reset status to wait for next button press
             break;
           case 'U': //up button
             break;
@@ -1159,6 +1164,7 @@ bool stateMachine() {
             lcd.print(F("button to pump"));
             lcd.setCursor(0, 0);
             lcd.write(byte(7));
+            buttonPressActive = false; // reset status to wait for next button press
             break;
           case 'U': //up button
             break;
@@ -1167,6 +1173,7 @@ bool stateMachine() {
           case 'R': //right button
             // move to home state
             currentProgramState = STATE_noContainer;
+            buttonPressActive = false; // reset status to wait for next button press
             lcdPrintStateNoContainer();
             break;
         }
@@ -1193,8 +1200,9 @@ bool stateMachine() {
             break;
           case 'L': //left button
             // move to previous state
-            currentProgramState = STATE_noContainer;
-            lcdPrintStateNoContainer();
+            currentProgramState = STATE_MenuScreen;
+            buttonPressActive = false; // reset status to wait for next button press
+            lcdShowModeSelectionMenu(modeSelectionIndex); //show menu screen for selecting the mass set-point
             break;
           case 'U': //up button
             break;
@@ -1210,6 +1218,7 @@ bool stateMachine() {
             lcd.print(F("recalibration"));
             lcd.setCursor(15, 1);
             lcd.write(byte(2));
+            buttonPressActive = false; // reset status to wait for next button press
             break;
         }
       }
@@ -1232,6 +1241,7 @@ bool stateMachine() {
           case 'L': //left button
             // move to previous state
             currentProgramState = STATE_noContainer;
+            buttonPressActive = false; // reset status to wait for next button press
             lcdPrintStateNoContainer();
             break;
           case 'U': //up button
@@ -1240,6 +1250,7 @@ bool stateMachine() {
             break;
           case 'R': //right button
             currentProgramState = STATE_SetPointMenu;
+            buttonPressActive = false; // reset status to wait for next button press
             lcdShowSetPointSelectionMenu(massSelectionIndex); //show menu screen for selecting the mass set-point
             break;
         }
@@ -1263,6 +1274,7 @@ bool stateMachine() {
           case 'L': //left button
             // move to previous state
             currentProgramState = STATE_noContainer;
+            buttonPressActive = false; // reset status to wait for next button press
             lcdPrintStateNoContainer();
             break;
           case 'U': //up button
@@ -1294,6 +1306,7 @@ bool stateMachine() {
             lcd.setCursor(15, 1);
             lcd.write(byte(2));
             Serial.println(F("Check container is on scale"));
+            buttonPressActive = false; // reset status to wait for next button press
             break;
         }
       }
@@ -1316,6 +1329,7 @@ bool stateMachine() {
           case 'L': //left button
             // move to previous state
             currentProgramState = STATE_noContainer;
+            buttonPressActive = false; // reset status to wait for next button press
             lcdPrintStateNoContainer();
             break;
           case 'U': //up button
@@ -1324,6 +1338,7 @@ bool stateMachine() {
             break;
           case 'R': //right button
             currentProgramState = STATE_SetPointRecordContainerMass;
+            buttonPressActive = false; // reset status to wait for next button press
             // move to recording container mass
             break;
         }
@@ -1383,6 +1398,7 @@ bool stateMachine() {
           case 'L': //left button
             // move to previous state
             currentProgramState = STATE_noContainer;
+            buttonPressActive = false; // reset status to wait for next button press
             lcdPrintStateNoContainer();
             break;
           case 'U': //up button
@@ -1391,6 +1407,7 @@ bool stateMachine() {
             break;
           case 'R': //right button
             currentProgramState = STATE_SetPointRecordFluidMass;
+            buttonPressActive = false; // reset status to wait for next button press
             // move to recording set point mass
             break;
         }
@@ -1450,6 +1467,7 @@ bool stateMachine() {
       if (abs(scale.get_units(3)) < 30) {
         // move to previous state
         currentProgramState = STATE_noContainer;
+        buttonPressActive = false; // reset status to wait for next button press
         lcdPrintStateNoContainer();
         Serial.print(F("Place container to start refill"));
       }
