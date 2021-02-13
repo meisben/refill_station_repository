@@ -21,3 +21,6 @@ The following arduino libraries are required to be installed on your system for 
 |      MD_UISwitch      |     v2.1.0     |        MajicDesigns         |    [Link](https://github.com/MajicDesigns/MD_UISwitch)     |
 
 [//]: # (This is the right format for a comment)
+
+## Program flow chart
+![Image](readme_images/variantC_flow_chart.png)
