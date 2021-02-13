@@ -44,8 +44,8 @@ The repository has the following structure
 
 |     Folder name      |                            Contents                             |           Comment            |
 | :------------------: | :-------------------------------------------------------------: | :--------------------------: |
-|       assembly       |                      Assembly instructions                      | Note: Not yet fully complete |
-|        debug         |                    Used to store debug logs                     |             N/A              |
+|    assembly_info     |                      Assembly instructions                      | Note: Not yet fully complete |
+|     debug_folder     |                    Used to store debug logs                     |             N/A              |
 |        design        |                    Information on the design                    |             N/A              |
 |   production_code    | Code used for the refill stations in a 'production' environment |             N/A              |
 |    readme_images     |                        Images for Readme                        |             N/A              |
