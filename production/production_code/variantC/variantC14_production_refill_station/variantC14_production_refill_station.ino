@@ -6,8 +6,8 @@
    ~~~~~Details~~~~~~~~~~~~
 
    Authors: Ben Money-Coomes
-   Date: 5/10/20
-   Purpose: Production code baseline for prototype refill station (version B2). For usage see Github readme
+   Date: 4/1/21
+   Purpose: Production code baseline for prototype refill station (version C14). For usage see Github readme
    References: See Github Readme
 
    ~~~~Version Control~~~~~
@@ -30,28 +30,30 @@
    v2.11a - Ajusting to variant B2 (no changes)
    v2.12 - Squishing bug where eroneous button presses after pumping were carried forward to the next bottle (added line "buttonPressActive = false; // reset status to ignore any erroneous button presses and wait for next button press" to case 0 of the state machine)
    v2.12_draftv1 - Looking to implement a low pass filter to see if it improves the pumping variation performance
-   v_C_2.3 - [Checkpoint] note: the up button is still problematic
-   v_C_2.4 - working on changing button flow
-   v_C_2.5 - [Checkpoint] everything is working
-   v_C_2.6 - working on writing Mass Set Points to the EEPROM using new states --> all working in v2
-   v_C_2.6 - working on removing bug caused by ocassional erroneous big negative HX711 readings
-   v_C_2.7 - [Checkpoint] Working version, no major bugs. Need to (1) add compensating factor for pump/fluid intertia, and (2) Periodically prompt user to tare scale if zero drifts
-   v_C_2.7 - working on (1) add compensating factor for pump/fluid intertia
-   v_C_2.8 - [Checkpoint] Added compensating factor for fluid inertia, but discovered bug with extreme high erroneous value from scale
-   v_C_2.9 - working on removing extreme high erroneous value from scale (I think i've sold it), There is also a bug where you zero the scale, when you take it off it says ready to pump -> should enter state where scale needs re-zeroing
-   v_C_3.0 - removed tare error from scale (removed by taring it after a 5s delay to allow any power fluctuations to pass)
-   v_C_3.1 - working on removing the bug:  where you zero the scale with a bottle on it, when you take it off it says ready to pump -> should enter state where scale needs re-zeroing
-   v_C_3.2 - [Checkpoint] Everything is working
-   v_C_3.3 - working on adding functionality so that if you hold down a button then things will keep pumping until it is released, I'm probably going to use the 'right' button for this as when pressed the button pin voltage should be around zero. Currently pump pin is changed to LED Pin on line 224!
-   v_C_3.4 - This is working ! Just need to add actual pin turn on to manual mode. And then sort out the menu order. State machine has been updated to best practice. Also removing totally the printLCD function will free up a LOT of memory!
-   v_C_3.5 - Working on the issues above (printLCD -> removed) (Output pin -> added)
-   v_C_3.6 - Working on the issues above 
-   v_C_3.7 - [Checkpoint] Everything is working, stable version
-   v_C_3.8 - Adding a custom value to the setpoints with title 'Custom' which will have intial value same as 250 ml
-   v_C_3.9 - [Checkpoint] Everything is working, stable version
-   v_C_4.0 - [Checkpoint] Working on removing bugs, which (1) erroneouly cause menus to be entered into sometimes because 'buttonActive' isn't reset, (2) adjusting fudge factor for setpoint to reduce this by half, (3) the set point mode and manual mode should return to menu if the left button is pressed
-   v_C_4.1 - In the above list of issued (2) has been solved. (1) and (3) have also been solved :) ! 
-   v_C_4.2 - [Checkpoint] Everything is generally working but the buttons often result in the wrong input, they're a bit of a nightmare. In next version i will be trying to add an if statement with a timer to the button function to resolve this
+   v_C_12.3 - [Checkpoint] note: the up button is still problematic
+   v_C_12.4 - working on changing button flow
+   v_C_12.5 - [Checkpoint] everything is working
+   v_C_12.6 - working on writing Mass Set Points to the EEPROM using new states --> all working in v2
+   v_C_12.6 - working on removing bug caused by ocassional erroneous big negative HX711 readings
+   v_C_12.7 - [Checkpoint] Working version, no major bugs. Need to (1) add compensating factor for pump/fluid intertia, and (2) Periodically prompt user to tare scale if zero drifts
+   v_C_12.7 - working on (1) add compensating factor for pump/fluid intertia
+   v_C_12.8 - [Checkpoint] Added compensating factor for fluid inertia, but discovered bug with extreme high erroneous value from scale
+   v_C_12.9 - working on removing extreme high erroneous value from scale (I think i've sold it), There is also a bug where you zero the scale, when you take it off it says ready to pump -> should enter state where scale needs re-zeroing
+   v_C_13.0 - removed tare error from scale (removed by taring it after a 5s delay to allow any power fluctuations to pass)
+   v_C_13.1 - working on removing the bug:  where you zero the scale with a bottle on it, when you take it off it says ready to pump -> should enter state where scale needs re-zeroing
+   v_C_13.2 - [Checkpoint] Everything is working
+   v_C_13.3 - working on adding functionality so that if you hold down a button then things will keep pumping until it is released, I'm probably going to use the 'right' button for this as when pressed the button pin voltage should be around zero. Currently pump pin is changed to LED Pin on line 224!
+   v_C_13.4 - This is working ! Just need to add actual pin turn on to manual mode. And then sort out the menu order. State machine has been updated to best practice. Also removing totally the printLCD function will free up a LOT of memory!
+   v_C_13.5 - Working on the issues above (printLCD -> removed) (Output pin -> added)
+   v_C_13.6 - Working on the issues above 
+   v_C_13.7 - [Checkpoint] Everything is working, stable version
+   v_C_13.8 - Adding a custom value to the setpoints with title 'Custom' which will have intial value same as 250 ml
+   v_C_13.9 - [Checkpoint] Everything is working, stable version
+   v_C_14.0 - [Checkpoint] Working on removing bugs, which (1) erroneouly cause menus to be entered into sometimes because 'buttonActive' isn't reset, (2) adjusting fudge factor for setpoint to reduce this by half, (3) the set point mode and manual mode should return to menu if the left button is pressed
+   v_C_14.1 - In the above list of issued (2) has been solved. (1) and (3) have also been solved :) ! 
+   v_C_14.2 - [Checkpoint] Everything is generally working but the buttons often result in the wrong input, they're a bit of a nightmare. In next version i will be trying to add an if statement with a timer to the button function to resolve this
+   v_C_14.3 - as explained in above line. I've implemented this and i'm testing it now
+   v_C_14.4 - [Checkpoint] Everything is working and stable, ready to ship to FILL
 
 */
 
@@ -359,6 +361,12 @@ MD_UISwitch::keyResult_t buttonState;
 char lastButtonPressed = 'Z'; // initialised to an unused char
 bool buttonPressActive = false;
 
+// To implement the pushbutton timer (to have a kind of debouncing effect
+bool bpaTimerStatus = false;
+unsigned long bpaTimerStartTime;
+unsigned long bpaTimeNow;
+int bpaWaitTime = 350; // wait time in milli seconds after the bool variable 'buttonPressActive' is set to false, before another button press is registered
+
 // Initialise g-h filter
 g_h_filter massFilter(200, 0, 300, G_CONSTANT, H_CONSTANT); //create g-h filter for tracking system state (mass of fluid)
 
@@ -491,7 +499,7 @@ bool readLCDShieldButtons() {
     //    case MD_UISwitch::KEY_UP:                                      break;
     //    case MD_UISwitch::KEY_DOWN:                                    break;
     case MD_UISwitch::KEY_PRESS:           //Serial.println("KEY_PRESS");
-      buttonPressActive = true;
+
       lastButtonPressed = (char)pushbuttonSwitch.getKey(); //global variable
       switch (lastButtonPressed) // if you need a default button behaviour enter it here
       {
@@ -500,6 +508,13 @@ bool readLCDShieldButtons() {
           //          Serial.println(F("Debug:S pressed"));
           break;
       }
+      if(!buttonPressActive){
+        bool result = isButtonPressActiveTimerComplete();
+        if(result){
+          buttonPressActive = true;
+        }
+      }     
+      
       break;
       //    case MD_UISwitch::KEY_DPRESS:    Serial.println("KEY_LONGPRESS"); break;
       //    case MD_UISwitch::KEY_LONGPRESS: Serial.println("KEY_LONGPRESS"); break;
@@ -677,6 +692,30 @@ bool isScaleReadingErroneousDuringPumping(float myReading, float myLastReading) 
   else {
     //    Serial.println("Reading not erroneous");
     return false;
+  }
+}
+
+bool isButtonPressActiveTimerComplete(){
+  // This function is used to add a timer to the button press sensing function. It has a kind of deboucing effect (hopefully!)
+  // when bool bpaTimerStatus is true then the timer is active
+  if(!bpaTimerStatus){
+    //if the timer is not active, i.e. first call of this function after bool buttonPressActive is set to false
+    bpaTimerStartTime = millis();
+    bpaTimerStatus = true;
+    return false; // return false as the function return value because the timer is not complete
+  }
+  else{
+    //if the timer is active
+    bpaTimeNow = millis();
+    unsigned long timePassed = abs(bpaTimeNow - bpaTimerStartTime);
+
+    if(timePassed > bpaWaitTime){
+      return true; // timer is complete
+    }
+    else{
+      return false; // timer is not complete
+    }
+    
   }
 }
 

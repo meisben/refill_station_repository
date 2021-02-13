@@ -1,39 +1,19 @@
-# Testing of the assembly and sub assemblies
+# Production code
 
 This folder contains the production code and associated information for the refill station
 
-## Contents
-
-* Folder contents
-* Production code details
-* Prerequisites
-
 ## Folder contents
 
-|   Folder name   |                                        Contents                                        | Comment |
-| :-------------: | :------------------------------------------------------------------------------------: | :-----: |
-| production_code | Code for each production varient of the refill station. Details are in the table below |   N/A   |
-|     images      |                                   Images for Readme                                    |   N/A   |
+|   Folder name   |                                                        Contents                                                        | Comment |
+| :-------------: | :--------------------------------------------------------------------------------------------------------------------: | :-----: |
+| production_code | Code for each production varient of the refill station. Details are in readme's within each folder. You should use the |   N/A   |
+|     images      |                                                   Images for Readme                                                    |   N/A   |
 
+## Software packs used for each prototype
 
-## Production code details
-Follow the instructions in the table below
-
-### Production code base versions
-These are the base 'reference' versions of the code. Updates happen here, are tested on this code, and are manually proliferated to the child versions of the code. Clearly this isn't efficient if the use of this software grows, but it works for prototyping..!
-
-| Refill Station Type | Production code assignment         | Latest Version | Tested? |  Bug list  |
-| :-----------------: | ---------------------------------- | :------------: | :-----: | :--------: |
-|         Mk1         | variantB_production_refill_station |     v2.12      |   Yes   | None known |
-
-## Production code child versions
-
-| Refill Station UID | Production code assignment          | Latest Version | Tested? | Scale factor used |                                                                  Differences from base version                                                                  |
-| :----------------: | ----------------------------------- | :------------: | :-----: | :---------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-|       Mk1_1        | variantB2_production_refill_station |     v2.12      |   No    |      112.157      | [A] Scale factor (for hx711 and strain gauge) [B] "int expectedContainerMass = 50;" (solves creep/drift of scale)  [C] alternate button resitance ladder values |
-|       Mk1_2        | variantB2_production_refill_station |     v2.12      |   Yes   |      223.61       |                                                                          No difference                                                                          |
-|       Mk1_3        | variantB3_production_refill_station |     v2.12      |   Yes   |        214        |                        [A] Scale factor (for hx711 and strain gauge) [B] "int expectedContainerMass = 50;" (solves creep/drift of scale)                        |
-
-
-## Prerequisites
-All arduino libraries must be installed as per instructions in the main readme (root of this repository)
+| Unique name | Software Pack Used | Microcontroller type |
+| :---------: | :----------------: | :------------------: |
+|     MK0     |      variantA      |       Arduino        |
+|     MK1     |      variantB      |       Arduino        |
+|     MK2     |      variantC      |       Arduino        |
+|  MK3_basic  |      variantD      |  Raspberry Pi Pico   |
