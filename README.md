@@ -10,15 +10,15 @@ This is a repository which contains information for assembly and testing of a re
 
 ## Overview of the refill station
 
-![Image](images/P1000816_compressed.jpg)
+![Image](readme_images/P1000816_compressed.jpg)
 
 The refill station is a low cost machine which is used to fill containers with fluid. It is inteded for use in a zero waste store or distributor. In these type of stores fluids are often slow and messy to refill because of their viscocity. The refill station solves this problem.
 
 The operating principle of the refill station is simple, it uses a diaphragm pump controlled by the user to move fluid from a bulk container into a smaller refill container (as shown in the images below).
 
-| Prototype Front                     | Prototype Back                     | Working Principle                      |
-| ----------------------------------- | ---------------------------------- | -------------------------------------- |
-| ![Image](images/Front_overview.png) | ![Image](images/Rear_overview.png) | ![Image](images/working_principle.png) |
+| Prototype Front                            | Prototype Back                            | Working Principle                             |
+| ------------------------------------------ | ----------------------------------------- | --------------------------------------------- |
+| ![Image](readme_images/Front_overview.png) | ![Image](readme_images/Rear_overview.png) | ![Image](readme_images/working_principle.png) |
 
 ### More information
 
@@ -42,13 +42,13 @@ Here high level details are listed on the prototypes which have created and test
 ## Repository structure
 The repository has the following structure
 
-|   Folder name   |                            Contents                             |           Comment            |
-| :-------------: | :-------------------------------------------------------------: | :--------------------------: |
-|    assembly     |                      Assembly instructions                      | Note: Not yet fully complete |
-|      debug      |                    Used to store debug logs                     |             N/A              |
-|     design      |                    Information on the design                    |             N/A              |
-|     images      |                        Images for Readme                        |             N/A              |
-| production_code | Code used for the refill stations in a 'production' environment |             N/A              |
-|     record      |     Record of attributes for each completed refill station      |             N/A              |
-|      tests      |                      Testing instructions                       |             N/A              |
+|     Folder name      |                            Contents                             |           Comment            |
+| :------------------: | :-------------------------------------------------------------: | :--------------------------: |
+|       assembly       |                      Assembly instructions                      | Note: Not yet fully complete |
+|        debug         |                    Used to store debug logs                     |             N/A              |
+|        design        |                    Information on the design                    |             N/A              |
+|   production_code    | Code used for the refill stations in a 'production' environment |             N/A              |
+|    readme_images     |                        Images for Readme                        |             N/A              |
+| record_of_production |     Record of attributes for each completed refill station      |             N/A              |
+|       testing        |                      Testing instructions                       |             N/A              |
 
