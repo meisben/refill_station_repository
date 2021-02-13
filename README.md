@@ -24,7 +24,7 @@ The operating principle of the refill station is simple, it uses a diaphragm pum
 
 General information on the refill station prototypes can be found on Green Green Robotics [main website](www.greengreenrobotics.com)
 
-More information on how the refil station is operated can be found at this [weblink](https://meisben.github.io/refill_station_multimedia_supplement/) using the password: refill915
+More information on how the refill station is operated can be found at this [weblink](https://meisben.github.io/refill_station_multimedia_supplement/) using the password: refill915
 
 ### Variants of the refill station prototoypes
 
@@ -46,6 +46,7 @@ The repository has the following structure
 | :-------------: | :-------------------------------------------------------------: | :--------------------------: |
 |    assembly     |                      Assembly instructions                      | Note: Not yet fully complete |
 |      debug      |                    Used to store debug logs                     |             N/A              |
+|     design      |                    Information on the design                    |             N/A              |
 |     images      |                        Images for Readme                        |             N/A              |
 | production_code | Code used for the refill stations in a 'production' environment |             N/A              |
 |     record      |     Record of attributes for each completed refill station      |             N/A              |
