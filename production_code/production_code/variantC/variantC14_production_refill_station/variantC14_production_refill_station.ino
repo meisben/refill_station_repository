@@ -85,24 +85,24 @@ const uint8_t ANALOG_SWITCH_PIN = A0;       // switches connected to this pin
 
 // These key values work for most LCD shields
 // Can be found using button_test_v1.0.ino script in drafts folder
-//MD_UISwitch_Analog::uiAnalogKeys_t kt[] =
-//{
-//  { 5, 5, 'R' },  // Right
-//  { 100, 50, 'U' },  // Up
-//  { 257, 15, 'D' },  // Down
-//  { 410, 15, 'L' },  // Left
-//  { 640, 15, 'S' },  // Select
-//};
-
-//// These key values work for the "D1 Robot" LCD shields (at least one of them!)
 MD_UISwitch_Analog::uiAnalogKeys_t kt[] =
 {
   { 5, 5, 'R' },  // Right
-  { 131, 20, 'U' },  // Up
-  { 307, 15, 'D' },  // Down
-  { 480, 15, 'L' },  // Left
-  { 720, 15, 'S' },  // Select
+  { 100, 50, 'U' },  // Up
+  { 257, 15, 'D' },  // Down
+  { 410, 15, 'L' },  // Left
+  { 640, 15, 'S' },  // Select
 };
+
+//// These key values work for the "D1 Robot" LCD shields (at least one of them!)
+//MD_UISwitch_Analog::uiAnalogKeys_t kt[] =
+//{
+//  { 5, 5, 'R' },  // Right
+//  { 131, 20, 'U' },  // Up
+//  { 307, 15, 'D' },  // Down
+//  { 480, 15, 'L' },  // Left
+//  { 720, 15, 'S' },  // Select
+//};
 
 
 // Initialise Switch
